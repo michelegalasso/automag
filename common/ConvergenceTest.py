@@ -1,5 +1,5 @@
 """
-automag.ConvergenceTest
+automag.common.ConvergenceTest
 ==================================
 
 Class for convergence tests.
@@ -21,7 +21,7 @@ launchpad = LaunchPad.from_file('/home/michele/.fireworks/my_launchpad.yaml')
 
 
 class ConvergenceTest(object):
-    def __init__(self, fix_params, encut_values = None, sigma_values = None, kpts_values = None):
+    def __init__(self, poscar_file, fix_params, encut_values = None, sigma_values = None, kpts_values = None):
         if encut_values is not None:
             assert sigma_values is None
             assert kpts_values is None
@@ -32,6 +32,7 @@ class ConvergenceTest(object):
             self.var_params = product(sigma_values, kpts_values)
 
         self.fix_params = fix_params
+        self.poscar_file = poscar_file
 
     def submit(self):
         params = copy(self.fix_params)
@@ -49,7 +50,7 @@ class ConvergenceTest(object):
                 raise ValueError('Convergence tests for three parameters simultaneously are not supported.')
 
             # create an atoms object and encode it
-            atoms = read('input/Fe2O3-alpha.vasp')
+            atoms = read(self.poscar_file)
             magmoms = np.array(12 * [4.0] + 18 * [0.0])         # use the FM configuration
             encode = atoms_to_encode(atoms)
 
