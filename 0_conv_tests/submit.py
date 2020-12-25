@@ -14,6 +14,10 @@ from common.SubmitFirework import SubmitFirework
 # location of the poscar file with the input structure
 poscar_file = '../input/Fe2O3-alpha.vasp'
 
+# what are we launching
+MODE = 'ENCUT'
+# MODE = 'KGRID'
+
 # define the VASP parameters
 params = {
     'xc': 'PBE',
@@ -29,22 +33,24 @@ params = {
 }
 
 # convergence test w.r.t. encut
-params1 = copy(params)
-params1['sigma'] = 0.1
-params1['kpts'] = 40
+if MODE == 'ENCUT':
+    params1 = copy(params)
+    params1['sigma'] = 0.1
+    params1['kpts'] = 40
 
-encut_values = range(400, 1000, 10)
+    encut_values = range(400, 1000, 10)
 
-convtest = SubmitFirework(poscar_file, mode='encut', fix_params=params1, encut_values=encut_values)
-convtest.submit()
+    convtest = SubmitFirework(poscar_file, mode='encut', fix_params=params1, encut_values=encut_values)
+    convtest.submit()
 
 # convergence test w.r.t. sigma and kpts
-params2 = copy(params)
-params2['encut'] = 600
+if MODE == 'KGRID':
+    params2 = copy(params)
+    params2['encut'] = 600
 
-sigma_values = [0.05, 0.1, 0.2]
-kpts_values = range(20, 110, 10)
+    sigma_values = [0.05, 0.1, 0.2]
+    kpts_values = range(20, 110, 10)
 
-convtest = SubmitFirework(poscar_file, mode='kgrid', fix_params=params2, sigma_values=sigma_values,
-                          kpts_values=kpts_values)
-convtest.submit()
+    convtest = SubmitFirework(poscar_file, mode='kgrid', fix_params=params2, sigma_values=sigma_values,
+                              kpts_values=kpts_values)
+    convtest.submit()
