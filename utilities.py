@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 import numpy as np
 
 from ase import Atoms
@@ -55,9 +56,14 @@ class VaspCalculationTask(FiretaskBase):
     """
     _fw_name = 'VaspCalculationTask'
     required_params = ['calc_params']
-    optional_params = ['encode', 'magmoms']
+    optional_params = ['encode', 'magmoms', 'bare_dir']
 
     def run_task(self, fw_spec):
+        # if bare_dir is given, copy CHGCAR and WAVECAR from it
+        if 'bare_dir' in self:
+            shutil.copy(os.path.join(self['bare_dir'], 'CHGCAR'), '.')
+            shutil.copy(os.path.join(self['bare_dir'], 'WAVECAR'), '.')
+
         # if encode is given, use it as input structure
         if 'encode' in self:
             atoms = encode_to_atoms(self['encode'])
