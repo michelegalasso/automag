@@ -47,7 +47,7 @@ bare_params = {
 
 # submit bare run
 if MODE == 'BARE':
-    bare_run = SubmitFirework(poscar_file, mode='singlerun', fix_params=bare_params)
+    bare_run = SubmitFirework(poscar_file, mode='singlepoint', fix_params=bare_params)
     bare_run.submit()
 
 # submit non-selfconsistent response
