@@ -15,7 +15,7 @@ from typing import Union
 from itertools import product
 from fireworks import LaunchPad, Firework, Workflow
 
-from utilities import atoms_to_encode, VaspCalculationTask, WriteOutputTask
+from common.utilities import atoms_to_encode, VaspCalculationTask, WriteOutputTask
 
 
 # substitute with your launchpad file
