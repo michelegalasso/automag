@@ -10,12 +10,18 @@ Script which plots results of convergence tests.
 import numpy as np
 import matplotlib.pyplot as plt
 
-# input parameters: just comment what you don't need
-MODE = 'encut'
-# MODE = 'kgrid'
+# increase matplotlib pyplot font size
+plt.rcParams.update({'font.size': 18})
+
+# choose the desired mode: 'encut' or 'kgrid'
+MODE = 'kgrid'
+
+# put the correct number of atoms in the unit cell
 ATOMS_IN_CELL = 30
-XMIN = 650
-XMAX = 850
+
+# minimum and maximum values on the x asis for plotting, can be omitted
+# XMIN = 660
+# XMAX = 1000
 
 
 def single_plot(X, Y, label=None):
@@ -69,13 +75,19 @@ elif MODE == 'kgrid':
     sigmas = np.array(sigmas)
     kptss = np.array(kptss)
     energies = np.array(energies)
-    sigma_values = set(sigmas)
+    sigma_values = sorted(set(sigmas))
     for sigma_value in sigma_values:
         indices = np.where(sigmas == sigma_value)
-        single_plot(kptss[indices], energies[indices], label=sigma_value)
+        single_plot(kptss[indices], energies[indices], label=f'SIGMA = {sigma_value}')
 else:
     raise ValueError('MODEs currently implemented: encut, kgrid.')
 
-plt.legend()
+if MODE == 'encut':
+    plt.xlabel('ENCUT')
+else:
+    plt.xlabel('kpts')
+    plt.legend()
+
+plt.ylabel('free energy TOTEN')
 plt.savefig(f'{MODE}.png')
 # plt.show()

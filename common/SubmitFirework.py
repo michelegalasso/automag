@@ -18,6 +18,7 @@ from fireworks import LaunchPad, Firework, Workflow
 from utilities import atoms_to_encode, VaspCalculationTask, WriteOutputTask
 
 
+# substitute with your launchpad file
 launchpad = LaunchPad.from_file('/home/michele/.fireworks/my_launchpad.yaml')
 
 
