@@ -15,7 +15,7 @@ from common.SubmitFirework import SubmitFirework
 poscar_file = '../input/Fe2O3-alpha.vasp'
 
 # choose the desired mode: 'encut' or 'kgrid'
-MODE = 'encut'
+MODE = 'kgrid'
 
 # define the VASP parameters
 params = {
@@ -45,7 +45,7 @@ if MODE == 'encut':
 # convergence test w.r.t. sigma and kpts
 if MODE == 'kgrid':
     params2 = copy(params)
-    params2['encut'] = 700
+    params2['encut'] = 670
 
     sigma_values = [0.05, 0.1, 0.2]
     kpts_values = range(20, 110, 10)

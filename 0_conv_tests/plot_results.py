@@ -14,14 +14,14 @@ import matplotlib.pyplot as plt
 plt.rcParams.update({'font.size': 18})
 
 # choose the desired mode: 'encut' or 'kgrid'
-MODE = 'encut'
+MODE = 'kgrid'
 
 # put the correct number of atoms in the unit cell
 ATOMS_IN_CELL = 30
 
 # minimum and maximum values on the x asis for plotting, can be omitted
-XMIN = 660
-XMAX = 1000
+# XMIN = 660
+# XMAX = 1000
 
 
 def single_plot(X, Y, label=None):
@@ -85,7 +85,7 @@ else:
 if MODE == 'encut':
     plt.xlabel('ENCUT')
 else:
-    plt.xlabel('kpts')
+    plt.xlabel('R_k')
     plt.legend()
 
 plt.ylabel('free energy TOTEN')
