@@ -29,8 +29,6 @@ palettable==3.3.0
 pandas==1.1.5
 paramiko==2.7.2
 Pillow==8.0.1
-pip==20.0.2
-pkg-resources==0.0.0
 plotly==4.14.1
 pycparser==2.20
 pymatgen==2020.12.3
@@ -44,7 +42,6 @@ retrying==1.3.3
 ruamel.yaml==0.16.12
 ruamel.yaml.clib==0.2.2
 scipy==1.5.4
-setuptools==44.0.0
 six==1.15.0
 spglib==1.16.0
 sympy==1.7.1
@@ -53,4 +50,3 @@ tqdm==4.54.1
 uncertainties==3.1.5
 urllib3==1.26.2
 Werkzeug==1.0.1
-wheel==0.36.2
