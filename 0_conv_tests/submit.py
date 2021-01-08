@@ -15,7 +15,7 @@ from common.SubmitFirework import SubmitFirework
 poscar_file = '../input/Fe2O3-alpha.vasp'
 
 # choose the desired mode: 'encut' or 'kgrid'
-MODE = 'kgrid'
+MODE = 'encut'
 
 # define the VASP parameters
 params = {
