@@ -21,7 +21,7 @@ atoms = read('../input/Fe2O3-alpha.vasp')
 MODE = 'SC'
 
 # launchdir of the bare run
-BARE_DIR = '/cephfs/home/mgalasso/Zfw_calcs/block_2020-12-14-08-02-00-715229/launcher_2020-12-25-08-35-18-089220'
+BARE_DIR = '/cephfs/home/mgalasso/fw_calcs/block_2020-12-14-08-02-00-715229/launcher_2020-12-25-08-35-18-089220'
 
 # change first Fe atom to Ni and save in a poscar file
 poscar_file = 'onefakeatom.vasp'
