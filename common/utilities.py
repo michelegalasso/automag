@@ -98,11 +98,13 @@ class VaspCalculationTask(FiretaskBase):
 
         # save information about convergence
         with open('is_converged', 'w') as f1:
-            with open('log', 'r') as f2:
-                if calc.converged is False and 'fatal error in bracketing' not in f2.read():
-                    f1.write('NONCONVERGED')
-                else:
-                    f1.write('converged')
+            for filename in os.listdir('.'):
+                if filename.endswith('.out'):
+                    with open(filename, 'r') as f2:
+                        if calc.converged is False and 'fatal error in bracketing' not in f2.read():
+                            f1.write('NONCONVERGED')
+                        else:
+                            f1.write('converged')
 
 
 @explicit_serialize
