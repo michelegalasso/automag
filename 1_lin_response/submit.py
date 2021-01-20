@@ -15,13 +15,11 @@ from common.SubmitFirework import SubmitFirework
 # location of the poscar file with the input structure
 atoms = read('../input/Fe2O3-alpha.vasp')
 
-# what are we launching
+# choose the desired mode: 'BARE', 'NSC' or 'SC'
 MODE = 'BARE'
-# MODE = 'NSC'
-# MODE = 'SC'
 
 # launchdir of the bare run
-BARE_DIR = '/cephfs/home/mgalasso/fw_calcs/block_2020-12-14-08-02-00-715229/launcher_2020-12-25-08-35-18-089220'
+BARE_DIR = '/cephfs/home/mgalasso/fw_calcs/block_2021-01-09-08-46-32-079078/launcher_2021-01-19-12-25-04-409802'
 
 # change first Fe atom to Ni and save in a poscar file
 poscar_file = 'onefakeatom.vasp'
