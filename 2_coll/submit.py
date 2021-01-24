@@ -1,10 +1,10 @@
 """
 automag.2_coll.submit
-==================================
+=====================
 
 Script which submits collinear relaxations.
 
-.. codeauthor:: Michele Galasso <michele.galasso@skoltech.ru>
+.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
 """
 
 import os

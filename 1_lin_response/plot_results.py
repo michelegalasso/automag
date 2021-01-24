@@ -1,10 +1,10 @@
 """
 automag.1_lin_response.plot_results
-==================================
+===================================
 
 Script which plots results of linear response U calculation.
 
-.. codeauthor:: Michele Galasso <michele.galasso@skoltech.ru>
+.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
 """
 
 import numpy as np

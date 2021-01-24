@@ -1,3 +1,12 @@
+"""
+automag.ase.run_vasp
+====================
+
+Script which tells ase how to run VASP.
+
+.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
+"""
+
 import os
 
 # vasp 5 local

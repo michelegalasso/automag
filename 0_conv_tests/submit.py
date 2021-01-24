@@ -1,10 +1,10 @@
 """
 automag.0_conv_tests.submit
-==================================
+===========================
 
 Script which submits convergence tests.
 
-.. codeauthor:: Michele Galasso <michele.galasso@skoltech.ru>
+.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
 """
 
 from copy import copy

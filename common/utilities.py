@@ -1,3 +1,12 @@
+"""
+automag.common.utilities
+========================
+
+Classes and functions to efficiently handle FireWorks calculations.
+
+.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
+"""
+
 import os
 import json
 import shutil

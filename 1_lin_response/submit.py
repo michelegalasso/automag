@@ -1,10 +1,10 @@
 """
 automag.1_lin_response.submit
-==================================
+=============================
 
 Script which submits linear response U calculations.
 
-.. codeauthor:: Michele Galasso <michele.galasso@skoltech.ru>
+.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
 """
 
 from copy import copy

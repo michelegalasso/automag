@@ -1,10 +1,10 @@
 """
 automag.1_coll.run_enumlib
-==================================
+==========================
 
 Script which runs enumlib.
 
-.. codeauthor:: Michele Galasso <michele.galasso@skoltech.ru>
+.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
 """
 
 import os

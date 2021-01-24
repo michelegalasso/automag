@@ -1,10 +1,10 @@
 """
 automag.common.SubmitFirework
-==================================
+=============================
 
 Class which takes care of submitting FireWorks to the remote database.
 
-.. codeauthor:: Michele Galasso <michele.galasso@skoltech.ru>
+.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
 """
 
 import numpy as np
