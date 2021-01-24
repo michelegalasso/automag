@@ -52,6 +52,11 @@ for filename in os.listdir('enumlib'):
             f.write(poscar_string)
 
         if filename.split('.')[1] == '1':
+            magmoms = 30 * [0.0]                        # NM configuration
+            relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=magmoms,
+                                       configuration='nm')
+            relax_run.submit()
+
             magmoms = 12 * [4.0] + 18 * [0.0]           # FM configuration
             relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=magmoms,
                                        configuration='fm')
