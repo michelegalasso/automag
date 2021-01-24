@@ -1,7 +1,10 @@
 """
-@file:      iterator_poscar_file.py
-@author:    Sergey Pozdnyakov
-@brief:     Iterator for files of type gatheredPOSCARS.
+automag.common.iterator_poscar_file
+===================================
+
+Iterator for files of type gatheredPOSCARS.
+
+.. codeauthor:: Sergey Pozdnyakov
 """
 
 
