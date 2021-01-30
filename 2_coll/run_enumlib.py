@@ -1,5 +1,5 @@
 """
-automag.1_coll.run_enumlib
+automag.2_coll.run_enumlib
 ==========================
 
 Script which runs enumlib.
