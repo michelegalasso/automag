@@ -10,6 +10,9 @@ Script which plots results of magnetic relaxations.
 import numpy as np
 import matplotlib.pyplot as plt
 
+# put the correct filename
+FILENAME = 'Fe12O18_relax.txt'
+
 # increase matplotlib pyplot font size
 plt.rcParams.update({'font.size': 18})
 
@@ -28,7 +31,7 @@ def sort_configurations(conf: str):
 
 # read lines
 lines, maginfos = [], []
-with open('Fe12O18_relax.txt', 'r') as f:
+with open(FILENAME, 'r') as f:
     for line in f:
         if line[0] != ' ':
             lines.append(line)
