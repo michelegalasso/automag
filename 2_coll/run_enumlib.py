@@ -10,8 +10,10 @@ Script which runs enumlib.
 import os
 
 from ase.io import read
+from pymatgen.core.composition import Composition
 
-ATOMIC_TYPES = 2
+COMPOSITION = Composition('Fe12O18')
+MAGNETIC_ATOMS = ['Fe']
 
 # location of the poscar file with the input structure
 atoms = read('../input/Fe2O3-alpha.vasp')
@@ -28,7 +30,14 @@ with open('struct_enum.in', 'w') as f:
             f.write(f'{component:14.10f}        ')
         f.write('\n')
 
-    f.write(f'  {ATOMIC_TYPES + 1} -nary case\n')
+    case = 0
+    for element in COMPOSITION.elements:
+        if element.name in MAGNETIC_ATOMS:
+            case += 2
+        else:
+            case += 1
+
+    f.write(f'  {case} -nary case\n')
     f.write(f'    {atoms.get_number_of_atoms()} # Number of points in the multilattice\n')
 
     for atom in atoms:
@@ -43,9 +52,17 @@ with open('struct_enum.in', 'w') as f:
     f.write('0.10000000E-06 # Epsilon (finite precision parameter)\n')
     f.write('full list of labelings\n')
     f.write('# Concentration restrictions\n')
-    f.write('6  6  30\n')
-    f.write('6  6  30\n')
-    f.write('18 18 30\n')
+
+    for atomtype, amount in COMPOSITION.to_data_dict['unit_cell_composition'].items():
+        if atomtype in MAGNETIC_ATOMS:
+            for _ in range(2):
+                f.write(f'{int(amount / 2):4d}')
+                f.write(f'{int(amount / 2):4d}')
+                f.write(f'{int(COMPOSITION.num_atoms):4d}\n')
+        else:
+            f.write(f'{int(amount):4d}')
+            f.write(f'{int(amount):4d}')
+            f.write(f'{int(COMPOSITION.num_atoms):4d}\n')
 
 os.system('/home/michele/softs/enumlib/src/enum.x')
-os.system('/home/michele/softs/enumlib/aux_src/makeStr.py 1 90')
+os.system('/home/michele/softs/enumlib/aux_src/makeStr.py 1 10000')

@@ -39,6 +39,6 @@ bulk
 0.10000000E-06 # Epsilon (finite precision parameter)
 full list of labelings
 # Concentration restrictions
-6  6  30
-6  6  30
-18 18 30
+   6   6  30
+   6   6  30
+  18  18  30
