@@ -23,10 +23,10 @@ launchpad = LaunchPad.from_file('/home/michele/.fireworks/my_launchpad.yaml')
 
 
 class SubmitFirework(object):
-    def __init__(self, poscar_file: str, mode: str, fix_params: dict, encut_values: Union[list, range] = None,
-                 sigma_values: Union[list, range] = None, kpts_values: Union[list, range] = None,
-                 pert_values: Union[list, range] = None, bare_dir: str = None, magmoms: list = None,
-                 configuration: str = None):
+    def __init__(self, poscar_file: str, mode: str, fix_params: dict, magmoms: list,
+                 encut_values: Union[list, range] = None, sigma_values: Union[list, range] = None,
+                 kpts_values: Union[list, range] = None, pert_values: Union[list, range] = None,
+                 bare_dir: str = None, configuration: str = None):
         if mode == 'encut':
             assert encut_values is not None
             assert sigma_values is None
@@ -60,11 +60,7 @@ class SubmitFirework(object):
         else:
             raise ValueError(f'Value of mode = {mode} not understood.')
 
-        if magmoms is not None:
-            self.magmoms = np.array(magmoms)
-        else:
-            self.magmoms = np.array(12 * [4.0] + 18 * [0.0])  # use the FM configuration
-
+        self.magmoms = np.array(magmoms)
         self.mode = mode
         self.bare_dir = bare_dir
         self.fix_params = fix_params
