@@ -89,7 +89,7 @@ class VaspCalculationTask(FiretaskBase):
                 assert 'encode' not in self
                 magmoms = atoms.get_magnetic_moments().round()
             else:
-                magmoms = self['magmoms']
+                magmoms = np.array(self['magmoms'])
 
             if magmoms.any():
                 # add the necessary VASP parameters
