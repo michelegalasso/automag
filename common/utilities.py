@@ -85,15 +85,17 @@ class VaspCalculationTask(FiretaskBase):
 
         # if magnetic calculation
         if 'magmoms' in self:
-            # add the necessary VASP parameters
-            self['calc_params']['lorbit'] = 11
-            self['calc_params']['ispin'] = 2
-
             if self['magmoms'] == 'previous':
                 assert 'encode' not in self
-                atoms.set_initial_magnetic_moments(atoms.get_magnetic_moments().round())
+                magmoms = atoms.get_magnetic_moments().round()
             else:
-                atoms.set_initial_magnetic_moments(self['magmoms'])
+                magmoms = self['magmoms']
+
+            if magmoms.any():
+                # add the necessary VASP parameters
+                self['calc_params']['lorbit'] = 11
+                self['calc_params']['ispin'] = 2
+                atoms.set_initial_magnetic_moments(magmoms)
 
         # convert any lists from the parameter settings into arrays
         keys = self['calc_params']
