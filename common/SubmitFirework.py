@@ -118,10 +118,16 @@ class SubmitFirework(object):
             energy_params['sigma'] = 0.05
 
             # calculate energy
-            sp_firetask = VaspCalculationTask(
-                calc_params=energy_params,
-                magmoms='previous',
-            )
+            if self.magmoms.any():
+                sp_firetask = VaspCalculationTask(
+                    calc_params=energy_params,
+                    magmoms='previous',
+                )
+            else:
+                sp_firetask = VaspCalculationTask(
+                    calc_params=energy_params,
+                    magmoms=self.magmoms,
+                )
         else:
             relax_firework = None
 
