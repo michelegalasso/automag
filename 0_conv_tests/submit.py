@@ -18,7 +18,7 @@ MODE = 'encut'
 poscar_file = '../input/Fe2O3-alpha.vasp'
 
 # choose the magnetic state to use for convergence tests
-magmoms = 100 * [0.0] + 1 * [4.0] + 9 * [0.0]
+magmoms = 12 * [4.0] + 18 * [0.0]
 
 # define the VASP parameters
 params = {
