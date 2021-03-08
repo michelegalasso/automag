@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 plt.rcParams.update({'font.size': 18})
 
 # choose the desired mode: 'encut' or 'kgrid'
-MODE = 'kgrid'
+MODE = 'encut'
 
 # put the correct number of atoms in the unit cell
 ATOMS_IN_CELL = 30

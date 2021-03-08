@@ -14,6 +14,9 @@ from common.SubmitFirework import SubmitFirework
 # location of the poscar file with the input structure
 poscar_file = '../input/Fe2O3-alpha.vasp'
 
+# choose the magnetic state to use for convergence tests
+magmoms = 100 * [0.0] + 1 * [4.0] + 9 * [0.0]
+
 # choose the desired mode: 'encut' or 'kgrid'
 MODE = 'encut'
 
@@ -26,7 +29,8 @@ params = {
     'ncore': 4,
     'ediff': 1e-6,
     'ismear': 1,
-    'nbands': 148,
+    # 'nbands': 148,
+    # 'pstress': 1500,
     'lcharg': False,
     'lwave': False,
 }
@@ -39,7 +43,7 @@ if MODE == 'encut':
 
     encut_values = range(400, 1000, 10)
 
-    convtest = SubmitFirework(poscar_file, mode='encut', fix_params=params1, encut_values=encut_values)
+    convtest = SubmitFirework(poscar_file, mode='encut', fix_params=params1, magmoms=magmoms, encut_values=encut_values)
     convtest.submit()
 
 # convergence test w.r.t. sigma and kpts
@@ -50,6 +54,6 @@ if MODE == 'kgrid':
     sigma_values = [0.05, 0.1, 0.2]
     kpts_values = range(20, 110, 10)
 
-    convtest = SubmitFirework(poscar_file, mode='kgrid', fix_params=params2, sigma_values=sigma_values,
+    convtest = SubmitFirework(poscar_file, mode='kgrid', fix_params=params2, magmoms=magmoms, sigma_values=sigma_values,
                               kpts_values=kpts_values)
     convtest.submit()
