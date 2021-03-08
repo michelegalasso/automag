@@ -11,14 +11,14 @@ from copy import copy
 
 from common.SubmitFirework import SubmitFirework
 
+# choose the desired mode: 'encut' or 'kgrid'
+MODE = 'encut'
+
 # location of the poscar file with the input structure
 poscar_file = '../input/Fe2O3-alpha.vasp'
 
 # choose the magnetic state to use for convergence tests
 magmoms = 100 * [0.0] + 1 * [4.0] + 9 * [0.0]
-
-# choose the desired mode: 'encut' or 'kgrid'
-MODE = 'encut'
 
 # define the VASP parameters
 params = {
