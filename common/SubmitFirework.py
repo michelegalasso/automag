@@ -116,6 +116,7 @@ class SubmitFirework(object):
                     energy_params[key] = value
             energy_params['ismear'] = -5
             energy_params['sigma'] = 0.05
+            energy_params['nelm'] = 100
 
             # calculate energy
             if self.magmoms.any():
