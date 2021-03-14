@@ -15,6 +15,9 @@ from common.SubmitFirework import SubmitFirework
 # location of the poscar file with the input structure
 atoms = read('../input/Fe2O3-alpha.vasp')
 
+# choose the magnetic state to use for U calculation
+magmoms = 12 * [4.0] + 18 * [0.0]
+
 # choose the desired mode: 'BARE', 'NSC' or 'SC'
 MODE = 'BARE'
 
@@ -38,14 +41,15 @@ bare_params = {
     'ediff': 1e-6,
     'ismear': 0,
     'sigma': 0.2,
-    'nbands': 148,
+    # 'nbands': 148,
+    # 'pstress': 1500,
     'kpts': 30,
     'lmaxmix': 4,
 }
 
 # submit bare run
 if MODE == 'BARE':
-    bare_run = SubmitFirework(poscar_file, mode='singlepoint', fix_params=bare_params)
+    bare_run = SubmitFirework(poscar_file, mode='singlepoint', fix_params=bare_params, magmoms=magmoms)
     bare_run.submit()
 
 # submit non-selfconsistent response
@@ -57,8 +61,8 @@ nsc_params['icharg'] = 11
 
 perturbations = [-0.08, -0.05, -0.02, 0.02, 0.05, 0.08]
 if MODE == 'NSC':
-    nsc_run = SubmitFirework(poscar_file, mode='perturbations', fix_params=nsc_params, pert_values=perturbations,
-                             bare_dir=BARE_DIR)
+    nsc_run = SubmitFirework(poscar_file, mode='perturbations', fix_params=nsc_params, magmoms=magmoms,
+                             pert_values=perturbations, bare_dir=BARE_DIR)
     nsc_run.submit()
 
 # submit selfconsistent response
@@ -66,5 +70,6 @@ sc_params = copy(nsc_params)
 del sc_params['icharg']
 
 if MODE == 'SC':
-    nsc_run = SubmitFirework(poscar_file, mode='perturbations', fix_params=sc_params, pert_values=perturbations)
+    nsc_run = SubmitFirework(poscar_file, mode='perturbations', fix_params=sc_params, magmoms=magmoms,
+                             pert_values=perturbations)
     nsc_run.submit()
