@@ -88,6 +88,6 @@ else:
     plt.xlabel(r'$R_k$')
     plt.legend()
 
-plt.ylabel('free energy TOTEN')
+plt.ylabel('free energy TOTEN / atom')
 plt.savefig(f'{MODE}.png')
 # plt.show()
