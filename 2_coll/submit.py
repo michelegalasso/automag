@@ -47,40 +47,48 @@ params = {
     'ldauprint': 2,
 }
 
+filenames = []
 for filename in os.listdir('enumlib'):
     if filename.startswith('vasp'):
-        with open(os.path.join('enumlib', filename), 'r') as f:
-            poscar_string = f.read()
+        filenames.append(filename)
+filenames.sort(key=lambda x: int(x.split('.')[1]))
 
-        to_replace = '  '
-        replace_with_1 = ''
-        replace_with_2 = ''
-        for element, abundance in COMPOSITION.items():
-            if element.name == MAGNETIC_ATOM:
-                to_replace += f'{int(abundance / 2)}   {int(abundance / 2)}   '
-            else:
-                to_replace += f'{int(abundance)}   '
+for filename in filenames:
+    with open(os.path.join('enumlib', filename), 'r') as f:
+        poscar_string = f.read()
 
-            replace_with_1 += f'{element.name:>3s} '
-            replace_with_2 += f'{int(abundance):3d} '
+    if sum([int(item) for item in poscar_string.split('\n')[5].split()]) != COMPOSITION.num_atoms:
+        COMPOSITION *= 2
 
-        poscar_string = poscar_string.replace(to_replace, replace_with_1 + '\n' + replace_with_2)
-        with open(TMP_FILENAME, 'w') as f:
-            f.write(poscar_string)
+    to_replace = '  '
+    replace_with_1 = ''
+    replace_with_2 = ''
+    for element, abundance in COMPOSITION.items():
+        if element.name == MAGNETIC_ATOM:
+            to_replace += f'{int(abundance / 2)}   {int(abundance / 2)}   '
+        else:
+            to_replace += f'{int(abundance)}   '
 
-        if filename.split('.')[1] == '1':
-            magmoms = 30 * [0.0]                        # NM configuration
-            relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=magmoms,
-                                       configuration='nm')
-            relax_run.submit()
+        replace_with_1 += f'{element.name:>3s} '
+        replace_with_2 += f'{int(abundance):3d} '
 
-            magmoms = 12 * [4.0] + 18 * [0.0]           # FM configuration
-            relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=magmoms,
-                                       configuration='fm')
-            relax_run.submit()
+    poscar_string = poscar_string.replace(to_replace, replace_with_1 + '\n' + replace_with_2)
+    with open(TMP_FILENAME, 'w') as f:
+        f.write(poscar_string)
 
-        configuration = 'afm' + filename.split('.')[1]
-        magmoms = 6 * [4.0] + 6 * [-4.0] + 18 * [0.0]   # AFM configuration
+    if filename.split('.')[1] == '1':
+        magmoms = 30 * [0.0]                        # NM configuration
         relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=magmoms,
-                                   configuration=configuration)
+                                   configuration='nm')
         relax_run.submit()
+
+        magmoms = 12 * [4.0] + 18 * [0.0]           # FM configuration
+        relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=magmoms,
+                                   configuration='fm')
+        relax_run.submit()
+
+    configuration = 'afm' + filename.split('.')[1]
+    magmoms = 6 * [4.0] + 6 * [-4.0] + 18 * [0.0]   # AFM configuration
+    relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=magmoms,
+                               configuration=configuration)
+    relax_run.submit()
