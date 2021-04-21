@@ -10,6 +10,10 @@ Script which submits collinear relaxations.
 import os
 
 from common.SubmitFirework import SubmitFirework
+from pymatgen.core.composition import Composition
+
+COMPOSITION = Composition('Fe12O18')
+MAGNETIC_ATOM = 'Fe'
 
 # name of tmp file
 TMP_FILENAME = 'tmp.vasp'
@@ -48,7 +52,19 @@ for filename in os.listdir('enumlib'):
         with open(os.path.join('enumlib', filename), 'r') as f:
             poscar_string = f.read()
 
-        poscar_string = poscar_string.replace('  6   6   18   ', ' Fe   O\n 12  18')
+        to_replace = '  '
+        replace_with_1 = ''
+        replace_with_2 = ''
+        for element, abundance in COMPOSITION.items():
+            if element.name == MAGNETIC_ATOM:
+                to_replace += f'{int(abundance / 2)}   {int(abundance / 2)}   '
+            else:
+                to_replace += f'{int(abundance)}   '
+
+            replace_with_1 += f'{element.name:>3s} '
+            replace_with_2 += f'{int(abundance):3d} '
+
+        poscar_string = poscar_string.replace(to_replace, replace_with_1 + '\n' + replace_with_2)
         with open(TMP_FILENAME, 'w') as f:
             f.write(poscar_string)
 
