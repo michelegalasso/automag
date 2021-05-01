@@ -9,8 +9,10 @@ Script which submits collinear relaxations.
 
 import os
 
-from common.SubmitFirework import SubmitFirework
 from pymatgen.core.composition import Composition
+
+from common.SubmitFirework import SubmitFirework
+from common.insert_elements_in_poscar import insert_elements_in_poscar
 
 COMPOSITION = Composition('Fe12O18')
 MAGNETIC_ATOM = 'Fe'
@@ -60,27 +62,15 @@ for filename in filenames:
     if sum([int(item) for item in poscar_string.split('\n')[5].split()]) != COMPOSITION.num_atoms:
         COMPOSITION *= 2
 
-    to_replace = '  '
-    replace_with_1 = ''
-    replace_with_2 = ''
-    for element, abundance in COMPOSITION.items():
-        if element.name == MAGNETIC_ATOM:
-            to_replace += f'{int(abundance / 2)}   {int(abundance / 2)}   '
-        else:
-            to_replace += f'{int(abundance)}   '
-
-        replace_with_1 += f'{element.name:>3s} '
-        replace_with_2 += f'{int(abundance):3d} '
-
-    poscar_string = poscar_string.replace(to_replace, replace_with_1 + '\n' + replace_with_2)
+    poscar_string = insert_elements_in_poscar(poscar_string, COMPOSITION, MAGNETIC_ATOM)
     with open(TMP_FILENAME, 'w') as f:
         f.write(poscar_string)
 
     if filename.split('.')[1] == '1':
-        magmoms = 30 * [0.0]                        # NM configuration
-        relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=magmoms,
-                                   configuration='nm')
-        relax_run.submit()
+        # magmoms = 30 * [0.0]                        # NM configuration
+        # relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=magmoms,
+        #                            configuration='nm')
+        # relax_run.submit()
 
         magmoms = 12 * [4.0] + 18 * [0.0]           # FM configuration
         relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=magmoms,
