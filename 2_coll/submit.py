@@ -8,6 +8,7 @@ Script which submits collinear relaxations.
 """
 
 import os
+import numpy as np
 
 from pymatgen.core.composition import Composition
 
@@ -16,6 +17,8 @@ from common.insert_elements_in_poscar import insert_elements_in_poscar
 
 COMPOSITION = Composition('Fe12O18')
 MAGNETIC_ATOM = 'Fe'
+FM_INIT = 12 * [4.0] + 18 * [0.0]
+AFM_INIT = 6 * [4.0] + 6 * [-4.0] + 18 * [0.0]
 
 # name of tmp file
 TMP_FILENAME = 'tmp.vasp'
@@ -61,24 +64,26 @@ for filename in filenames:
 
     if sum([int(item) for item in poscar_string.split('\n')[5].split()]) != COMPOSITION.num_atoms:
         COMPOSITION *= 2
+        FM_INIT = np.repeat(FM_INIT, 2)
+        AFM_INIT = np.repeat(AFM_INIT, 2)
 
     poscar_string = insert_elements_in_poscar(poscar_string, COMPOSITION, MAGNETIC_ATOM)
     with open(TMP_FILENAME, 'w') as f:
         f.write(poscar_string)
 
     if filename.split('.')[1] == '1':
-        # magmoms = 30 * [0.0]                        # NM configuration
-        # relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=magmoms,
+        # nm_init = np.zeros(len(COMPOSITION.num_atoms))      # NM configuration
+        # relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=nm_init,
         #                            configuration='nm')
         # relax_run.submit()
 
-        magmoms = 12 * [4.0] + 18 * [0.0]           # FM configuration
-        relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=magmoms,
+        # FM configuration
+        relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=FM_INIT,
                                    configuration='fm')
         relax_run.submit()
 
     configuration = 'afm' + filename.split('.')[1]
-    magmoms = 6 * [4.0] + 6 * [-4.0] + 18 * [0.0]   # AFM configuration
-    relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=magmoms,
+    # AFM configuration
+    relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=AFM_INIT,
                                configuration=configuration)
     relax_run.submit()
