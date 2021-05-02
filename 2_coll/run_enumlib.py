@@ -43,15 +43,19 @@ with open('struct_enum.in', 'w') as f:
     f.write(f'  {case} -nary case\n')
     f.write(f'    {atoms.get_number_of_atoms()} # Number of points in the multilattice\n')
 
+    offset = 0
     for atom in atoms:
         for component in atom.position:
             f.write(f'{component:14.10f}        ')
         if atom.symbol == MAGNETIC_ATOM:
-            f.write('0/1\n')
+            offset = 1
+            for i, element in enumerate(COMPOSITION.elements):
+                if atom.symbol == element.name:
+                    f.write(f'{i}/{i + offset}\n')
         else:
             for i, element in enumerate(COMPOSITION.elements):
                 if atom.symbol == element.name:
-                    f.write(f'{i + 1}\n')
+                    f.write(f'{i + offset}\n')
 
     f.write(f'    1 {SUPERCELL_SIZE}   # Starting and ending cell sizes for search\n')
     f.write('0.10000000E-06 # Epsilon (finite precision parameter)\n')
