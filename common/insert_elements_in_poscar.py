@@ -2,7 +2,7 @@
 automag.common.insert_elements_in_poscar
 ========================================
 
-Script which submits collinear relaxations.
+Simple function which inserts element names in poscars from enumlib.
 
 .. codeauthor:: Michele Galasso <m.galasso@yandex.com>
 """
