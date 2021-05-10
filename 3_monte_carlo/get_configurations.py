@@ -21,7 +21,6 @@ COMPOSITION = Composition('Fe12O18')
 MAGNETIC_ATOM = 'Fe'
 ENUMLIB_DIR = '../2_coll/enumlib'
 RELAXATION_RESULTS = '../2_coll/Fe12O18_relax.txt'
-NEIGHBOR_SPHERE_RADIUS = 3.5
 
 # reference magnetic configurations
 fm_reference = 12 * [4.0] + 18 * [0.0]                    # FM configuration
