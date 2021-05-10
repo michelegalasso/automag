@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 FILENAME = 'Fe12O18_relax.txt'
 
 # increase matplotlib pyplot font size
-plt.rcParams.update({'font.size': 18})
+plt.rcParams.update({'font.size': 16})
 
 # set figure size
 plt.figure(figsize=(16, 9))
@@ -53,9 +53,16 @@ for line, maginfo in zip(lines, maginfos):
     initial, final = maginfo.split('final_magmoms=')
     initial = initial[initial.index('[') + 1:initial.index(']')]
     final = final[final.index('[') + 1:final.index(']')]
-    initial = np.array(initial.split(', '), dtype=float)
+    initial = np.array(initial.split(), dtype=float)
     final = np.array(final.split(), dtype=float)
-    if max(abs(initial - final)) < 1:
+
+    for i, item in enumerate(final):
+        if item > 0:
+            final[i] = np.floor(item)
+        else:
+            final[i] = np.ceil(item)
+
+    if np.array_equal(np.sign(initial), np.sign(final)) or np.array_equal(np.sign(initial), -np.sign(final)):
         kept_magmoms.append(True)
     else:
         kept_magmoms.append(False)
@@ -72,13 +79,29 @@ configurations = configurations[indices]
 energies = energies[indices]
 kept_magmoms = kept_magmoms[indices]
 
+# normalize energies for plot
+energies -= min(energies)
+energies += 0.1 * max(energies)
+
 # plot results
-plt.scatter(repr_configurations[~kept_magmoms], energies[~kept_magmoms], c='r')
-plt.scatter(repr_configurations[kept_magmoms], energies[kept_magmoms], c='b')
+plt.bar(repr_configurations[~kept_magmoms], energies[~kept_magmoms], bottom=-0.1 * max(energies), color='r')
+plt.bar(repr_configurations[kept_magmoms], energies[kept_magmoms], bottom=-0.1 * max(energies), color='b')
+
+# label bars
+ax = plt.gca()
+rects = ax.patches
+for i, rect in enumerate(rects):
+    height = rect.get_height()
+    ax.text(rect.get_x() + rect.get_width() / 2, height - 0.1 * max(energies), str(i),
+            fontsize='xx-small', ha='center', va='bottom')
+
+# label axes
 plt.xlabel('configurations')
 plt.ylabel('free energy TOTEN')
-plt.savefig('stability.png')
-# plt.show()
+
+# save or show bar chart
+# plt.savefig('stability.png')
+plt.show()
 
 print(f'The most stable configuration is {configurations[np.argmin(energies)]}.')
 if kept_magmoms[np.argmin(energies)] is False:
