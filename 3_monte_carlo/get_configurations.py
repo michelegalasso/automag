@@ -28,7 +28,7 @@ fm_reference = 12 * [4.0] + 18 * [0.0]                    # FM configuration
 afm_reference = 6 * [4.0] + 6 * [-4.0] + 18 * [0.0]       # AFM configuration
 
 
-def get_final_magmoms_and_enthalpies(configuration, relaxation_results):
+def get_final_magmoms_and_enthalpy(configuration, relaxation_results):
     ind_1 = relaxation_results.index(configuration + ' ')
     ind_2 = relaxation_results.index('\n', ind_1)
     enthalpy = float(relaxation_results[ind_1:ind_2].split()[-1].split('=')[1])
@@ -63,7 +63,7 @@ for filename in filenames:
 
     config_number = filename.split('.')[1]
     current_poscar = insert_elements_in_poscar(current_poscar, COMPOSITION, MAGNETIC_ATOM)
-    final_magmoms, enthalpy = get_final_magmoms_and_enthalpies('afm' + config_number, relaxation_results)
+    final_magmoms, enthalpy = get_final_magmoms_and_enthalpy('afm' + config_number, relaxation_results)
 
     if previous_poscar:
         if previous_poscar.split('\n')[2:5] == current_poscar.split('\n')[2:5]:
@@ -97,7 +97,7 @@ for filename in filenames:
             enthalpies.append([enthalpy])
 
         if config_number == '1':
-            final_magmoms, enthalpy = get_final_magmoms_and_enthalpies('fm', relaxation_results)
+            final_magmoms, enthalpy = get_final_magmoms_and_enthalpy('fm', relaxation_results)
             if np.array_equal(np.around(final_magmoms), fm_reference):
                 configuration = np.sign(fm_reference).astype(int)
                 configurations[-1].append(configuration[configuration != 0])
