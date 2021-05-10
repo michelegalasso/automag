@@ -24,14 +24,14 @@ matplotlib==3.3.3
 monty==4.0.2
 mpmath==1.1.0
 networkx==2.5
-numpy==1.19.4
+numpy==1.20.2
 palettable==3.3.0
 pandas==1.1.5
 paramiko==2.7.2
 Pillow==8.0.1
 plotly==4.14.1
 pycparser==2.20
-pymatgen==2020.12.3
+pymatgen==2022.0.8
 pymongo==3.11.2
 PyNaCl==1.4.0
 pyparsing==2.4.7
