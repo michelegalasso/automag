@@ -62,7 +62,11 @@ for filename in filenames:
 
     config_number = filename.split('.')[1]
     current_poscar = insert_elements_in_poscar(current_poscar, COMPOSITION, MAGNETIC_ATOM)
-    final_magmoms, energy = get_final_magmoms_and_energy('afm' + config_number, relaxation_results)
+
+    if 'afm' + config_number in relaxation_results:
+        final_magmoms, energy = get_final_magmoms_and_energy('afm' + config_number, relaxation_results)
+    else:
+        continue
 
     if previous_poscar:
         if previous_poscar.split('\n')[2:5] == current_poscar.split('\n')[2:5]:
