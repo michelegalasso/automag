@@ -23,20 +23,20 @@ ENUMLIB_DIR = '../2_coll/enumlib'
 RELAXATION_RESULTS = '../2_coll/Fe12O18_relax.txt'
 
 # reference magnetic configurations
-fm_reference = 12 * [4.0] + 18 * [0.0]                    # FM configuration
-afm_reference = 6 * [4.0] + 6 * [-4.0] + 18 * [0.0]       # AFM configuration
+fm_reference = np.array(12 * [4.0] + 18 * [0.0])                    # FM configuration
+afm_reference = np.array(6 * [4.0] + 6 * [-4.0] + 18 * [0.0])       # AFM configuration
 
 
-def get_final_magmoms_and_enthalpy(configuration, relaxation_results):
+def get_final_magmoms_and_energy(configuration, relaxation_results):
     ind_1 = relaxation_results.index(configuration + ' ')
     ind_2 = relaxation_results.index('\n', ind_1)
-    enthalpy = float(relaxation_results[ind_1:ind_2].split()[-1].split('=')[1])
+    energy = float(relaxation_results[ind_1:ind_2].split()[-1].split('=')[1])
 
     ind_3 = relaxation_results.index('final_magmoms=[', ind_2) + 15
     ind_4 = relaxation_results.index(']', ind_3)
     final_magmoms = [float(item) for item in relaxation_results[ind_3:ind_4].split()]
 
-    return final_magmoms, enthalpy
+    return final_magmoms, energy
 
 
 # select filenames starting with the string 'vasp'
@@ -52,7 +52,7 @@ with open(RELAXATION_RESULTS, 'rt') as f:
 
 # work out configurations
 configurations = []
-enthalpies = []
+energies = []
 geometries = []
 previous_poscar = None
 for filename in filenames:
@@ -62,13 +62,14 @@ for filename in filenames:
 
     config_number = filename.split('.')[1]
     current_poscar = insert_elements_in_poscar(current_poscar, COMPOSITION, MAGNETIC_ATOM)
-    final_magmoms, enthalpy = get_final_magmoms_and_enthalpy('afm' + config_number, relaxation_results)
+    final_magmoms, energy = get_final_magmoms_and_energy('afm' + config_number, relaxation_results)
 
     if previous_poscar:
         if previous_poscar.split('\n')[2:5] == current_poscar.split('\n')[2:5]:
             geometries[-1].append(current_poscar)
 
-            if np.array_equal(np.around(final_magmoms), afm_reference):
+            if np.array_equal(np.around(final_magmoms), afm_reference) or \
+                    np.array_equal(np.around(final_magmoms), -afm_reference):
                 current_structure = Structure.from_str(current_poscar, fmt='poscar')
 
                 mag_indices = current_structure.indices_from_symbol(MAGNETIC_ATOM)
@@ -78,29 +79,32 @@ for filename in filenames:
                 _, indices = np.where(current_coords[:,None] == reference_coords)
                 configuration = np.sign(afm_reference).astype(int)
                 configurations[-1].append(configuration[indices])
-                enthalpies[-1].append(enthalpy)
+                energies[-1].append(energy)
         else:
             previous_poscar = None
             geometries.append([current_poscar])
 
-            if np.array_equal(np.around(final_magmoms), afm_reference):
+            if np.array_equal(np.around(final_magmoms), afm_reference) or \
+                    np.array_equal(np.around(final_magmoms), -afm_reference):
                 configuration = np.sign(afm_reference).astype(int)
                 configurations.append([configuration[configuration != 0]])
-                enthalpies.append([enthalpy])
+                energies.append([energy])
     else:
         geometries.append([current_poscar])
 
-        if np.array_equal(np.around(final_magmoms), afm_reference):
+        if np.array_equal(np.around(final_magmoms), afm_reference) or \
+                np.array_equal(np.around(final_magmoms), -afm_reference):
             configuration = np.sign(afm_reference).astype(int)
             configurations.append([configuration[configuration != 0]])
-            enthalpies.append([enthalpy])
+            energies.append([energy])
 
         if config_number == '1':
-            final_magmoms, enthalpy = get_final_magmoms_and_enthalpy('fm', relaxation_results)
-            if np.array_equal(np.around(final_magmoms), fm_reference):
+            final_magmoms, energy = get_final_magmoms_and_energy('fm', relaxation_results)
+            if np.array_equal(np.around(final_magmoms), fm_reference) or \
+                    np.array_equal(np.around(final_magmoms), -fm_reference):
                 configuration = np.sign(fm_reference).astype(int)
                 configurations[-1].append(configuration[configuration != 0])
-                enthalpies[-1].append(enthalpy)
+                energies[-1].append(energy)
 
     previous_poscar = current_poscar
 
@@ -117,6 +121,6 @@ print('Geometry: afm{}'.format(geometries[geometry_index][0].split('\n')[0].spli
 with open('configurations.txt', 'wt') as f:
     json.dump([a.tolist() for a in configurations[geometry_index]], f)
 
-# write enthalpies to file
-with open('enthalpies.txt', 'wt') as f:
-    json.dump(enthalpies[geometry_index], f)
+# write energies to file
+with open('energies.txt', 'wt') as f:
+    json.dump(energies[geometry_index], f)
