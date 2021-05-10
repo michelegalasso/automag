@@ -10,8 +10,11 @@ Script which plots results of magnetic relaxations.
 import numpy as np
 import matplotlib.pyplot as plt
 
-# put the correct filename
-FILENAME = 'Fe12O18_relax.txt'
+from pymatgen.core.composition import Composition
+
+# input parameters
+FILENAMES = ['Fe12O18_relax.txt']
+MAGNETIC_ATOM = 'Fe'
 
 # increase matplotlib pyplot font size
 plt.rcParams.update({'font.size': 16})
@@ -30,42 +33,44 @@ def sort_configurations(conf: str):
 
 
 # read lines
-lines, maginfos = [], []
-with open(FILENAME, 'r') as f:
-    for line in f:
-        if line[0] != ' ':
-            lines.append(line)
+for filename in FILENAMES:
+    lines, maginfos = [], []
+    with open(filename, 'r') as f:
+        for line in f:
+            if line[0] != ' ':
+                lines.append(line)
+            else:
+                maginfos.append(line)
+
+    # extract the results
+    composition = Composition(filename.split('_')[0])
+    configurations, energies, kept_magmoms = [], [], []
+    for line, maginfo in zip(lines, maginfos):
+        values = line.split()
+        configurations.append(values[0])
+        energies.append(float(values[-1].split('=')[1]) / composition[MAGNETIC_ATOM] * 1000)
+
+        if values[2].split('=')[1] == 'NONCONVERGED':
+            print(f'WARNING: relax of {values[0]} did not converge.')
+        if values[3].split('=')[1] == 'NONCONVERGED':
+            print(f'WARNING: energy calculation of {values[0]} did not converge.')
+
+        initial, final = maginfo.split('final_magmoms=')
+        initial = initial[initial.index('[') + 1:initial.index(']')]
+        final = final[final.index('[') + 1:final.index(']')]
+        initial = np.array(initial.split(), dtype=float)
+        final = np.array(final.split(), dtype=float)
+
+        for i, item in enumerate(final):
+            if item > 0:
+                final[i] = np.floor(item)
+            else:
+                final[i] = np.ceil(item)
+
+        if np.array_equal(np.sign(initial), np.sign(final)) or np.array_equal(np.sign(initial), -np.sign(final)):
+            kept_magmoms.append(True)
         else:
-            maginfos.append(line)
-
-# extract the results
-configurations, energies, kept_magmoms = [], [], []
-for line, maginfo in zip(lines, maginfos):
-    values = line.split()
-    configurations.append(values[0])
-    energies.append(float(values[-1].split('=')[1]))
-
-    if values[2].split('=')[1] == 'NONCONVERGED':
-        print(f'WARNING: relax of {values[0]} did not converge.')
-    if values[3].split('=')[1] == 'NONCONVERGED':
-        print(f'WARNING: energy calculation of {values[0]} did not converge.')
-
-    initial, final = maginfo.split('final_magmoms=')
-    initial = initial[initial.index('[') + 1:initial.index(']')]
-    final = final[final.index('[') + 1:final.index(']')]
-    initial = np.array(initial.split(), dtype=float)
-    final = np.array(final.split(), dtype=float)
-
-    for i, item in enumerate(final):
-        if item > 0:
-            final[i] = np.floor(item)
-        else:
-            final[i] = np.ceil(item)
-
-    if np.array_equal(np.sign(initial), np.sign(final)) or np.array_equal(np.sign(initial), -np.sign(final)):
-        kept_magmoms.append(True)
-    else:
-        kept_magmoms.append(False)
+            kept_magmoms.append(False)
 
 configurations = np.array(configurations)
 energies = np.array(energies)
@@ -90,6 +95,7 @@ plt.bar(repr_configurations[kept_magmoms], energies[kept_magmoms], bottom=-0.1 *
 # label bars
 ax = plt.gca()
 rects = ax.patches
+rects.sort(key=lambda x: x.get_x())
 for i, rect in enumerate(rects):
     height = rect.get_height()
     ax.text(rect.get_x() + rect.get_width() / 2, height - 0.1 * max(energies), str(i),
@@ -97,12 +103,13 @@ for i, rect in enumerate(rects):
 
 # label axes
 plt.xlabel('configurations')
-plt.ylabel('free energy TOTEN')
+plt.ylabel(f'free energy TOTEN (meV/{MAGNETIC_ATOM} atom)')
 
 # save or show bar chart
-# plt.savefig('stability.png')
-plt.show()
+plt.savefig('stability.png')
+# plt.show()
 
 print(f'The most stable configuration is {configurations[np.argmin(energies)]}.')
-if kept_magmoms[np.argmin(energies)] is False:
-    print('WARNING: values of initial and final magnetic moments significantly differ.')
+if np.logical_not(kept_magmoms[np.argmin(energies)]):
+    print('WARNING: values of initial and final magnetic moments of the most stable configuration '
+          'significantly differ.')
