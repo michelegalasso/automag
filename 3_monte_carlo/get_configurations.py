@@ -118,8 +118,9 @@ for i, l in enumerate(configurations):
     if len(l) > len(configurations[geometry_index]):
         geometry_index = i
 
-# print geometry with most configurations
+# print geometry with most configurations and its abundance
 print('Geometry: afm{}'.format(geometries[geometry_index][0].split('\n')[0].split()[-1]))
+print('Abundance: {}'.format(len(configurations[geometry_index])))
 
 # write configurations to file
 with open('configurations.txt', 'wt') as f:

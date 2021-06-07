@@ -10,16 +10,16 @@ import numpy as np
 from pymatgen.core.structure import Structure
 
 # input parameters
-RELAXED_GEOMETRY = 'Fe2O3-alpha-afm1-relaxed.vasp'
-NON_MAGNETIC_ATOMS = ['O']
-NEIGHBORS_RADIUS = 2.9
-DISTANCES_BETWEEN_NEIGHBORS = [2.89]
-COUPLING_CONSTANTS = [-1.17889533e-20]
-NUM_MATERIALS = 2           # set 1 for Curie temperature, 2 for Néel temperature
+RELAXED_GEOMETRY = 'La2Nd2H40-fm-relaxed.vasp'
+NON_MAGNETIC_ATOMS = ['La', 'H']
+CUTOFF_RADIUS = 4.0
+DISTANCES_BETWEEN_NEIGHBORS = [3.57]
+COUPLING_CONSTANTS = [4.25219829e-18]
+NUM_MATERIALS = 1           # set 1 for Curie temperature, 2 for Néel temperature
 
 structure = Structure.from_file(RELAXED_GEOMETRY)
 structure.remove_species(NON_MAGNETIC_ATOMS)
-center_indices, point_indices, offset_vectors, distances = structure.get_neighbor_list(NEIGHBORS_RADIUS)
+center_indices, point_indices, offset_vectors, distances = structure.get_neighbor_list(CUTOFF_RADIUS)
 
 # get thresholds for comparing atomic distances
 thresholds = [(a + b) / 2 for a, b in zip(DISTANCES_BETWEEN_NEIGHBORS[:-1], DISTANCES_BETWEEN_NEIGHBORS[1:])]

@@ -15,23 +15,21 @@ from pymatgen.core.structure import Structure
 # input parameters
 RELAXED_GEOMETRY = 'Fe2O3-alpha-afm1-relaxed.vasp'
 NON_MAGNETIC_ATOMS = ['O']
-NEIGHBORS_RADIUS = 4.0
+CUTOFF_RADIUS = 4.0
 
 structure = Structure.from_file(RELAXED_GEOMETRY)
 structure.remove_species(NON_MAGNETIC_ATOMS)
-center_indices, point_indices, offset_vectors, distances = structure.get_neighbor_list(NEIGHBORS_RADIUS)
+center_indices, point_indices, offset_vectors, distances = structure.get_neighbor_list(CUTOFF_RADIUS)
 
 # get unique distances
 unique_distances, counts = np.unique(np.around(distances, 2), return_counts=True)
-print(f'distances between neighbours: {unique_distances.tolist()}')
-print(f'counts: {counts.tolist()}')
 
 # read configurations from file
 with open('configurations.txt', 'rt') as f:
     configurations = json.load(f)
 
 # read enthalpies from file
-with open('enthalpies.txt', 'rt') as f:
+with open('energies.txt', 'rt') as f:
     b = json.load(f)
 
 A = []
@@ -47,4 +45,12 @@ for item in configurations:
 A = np.array(A)
 
 values = np.linalg.lstsq(A, b, rcond=None)
-print(f'coupling constants: {values[0][1:] * 1.60218e-19}')
+
+# print results
+if np.linalg.matrix_rank(A) == len(unique_distances) + 1:
+    print(f'distances between neighbours: {unique_distances.tolist()}')
+    print(f'counts: {counts.tolist()}')
+    print(f'coupling constants: {values[0][1:] * 1.60218e-19}')
+else:
+    print(f'ERROR: SYSTEM OF {np.linalg.matrix_rank(A)} INDEPENDENT EQUATION(S) '
+          f'IN {len(unique_distances) + 1} UNKNOWNS!')
