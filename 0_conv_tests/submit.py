@@ -39,9 +39,9 @@ params = {
 if MODE == 'encut':
     params1 = copy(params)
     params1['sigma'] = 0.1
-    params1['kpts'] = 40
+    params1['kpts'] = 30
 
-    encut_values = range(400, 1000, 10)
+    encut_values = range(500, 1010, 10)
 
     convtest = SubmitFirework(poscar_file, mode='encut', fix_params=params1, magmoms=magmoms, encut_values=encut_values)
     convtest.submit()
