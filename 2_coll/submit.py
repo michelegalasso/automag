@@ -30,13 +30,14 @@ params = {
     'ncore': 4,
     'encut': 670,
     'ediff': 1e-8,
-    'ediffg': -1e-3,
-    'ibrion': 2,
-    'isif': 3,
-    'nsw': 300,
-    'potim': 0.2,
-    'ismear': 1,
-    'sigma': 0.1,
+    # 'ediffg': -1e-3,
+    # 'ibrion': 2,
+    # 'isif': 3,
+    # 'nsw': 300,
+    # 'potim': 0.2,
+    'ismear': -5,
+    'sigma': 0.05,
+    'nelm': 200,
     # 'nbands': 148,
     # 'pstress': 1500,
     'kpts': 30,
@@ -78,12 +79,12 @@ for filename in filenames:
         # relax_run.submit()
 
         # FM configuration
-        relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=FM_INIT,
+        relax_run = SubmitFirework(TMP_FILENAME, mode='singlepoint', fix_params=params, magmoms=FM_INIT,
                                    configuration='fm')
         relax_run.submit()
 
     configuration = 'afm' + filename.split('.')[1]
     # AFM configuration
-    relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=AFM_INIT,
+    relax_run = SubmitFirework(TMP_FILENAME, mode='singlepoint', fix_params=params, magmoms=AFM_INIT,
                                configuration=configuration)
     relax_run.submit()
