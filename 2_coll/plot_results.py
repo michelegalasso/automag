@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from pymatgen.core.composition import Composition
 
 # input parameters
-FILENAMES = ['Fe12O18_relax.txt']
+FILENAMES = ['Fe12O18_singlepoint.txt']
 MAGNETIC_ATOM = 'Fe'
 
 # increase matplotlib pyplot font size
@@ -51,8 +51,6 @@ for filename in FILENAMES:
         energies.append(float(values[-1].split('=')[1]) / composition[MAGNETIC_ATOM] * 1000)
 
         if values[2].split('=')[1] == 'NONCONVERGED':
-            print(f'WARNING: relax of {values[0]} did not converge.')
-        if values[3].split('=')[1] == 'NONCONVERGED':
             print(f'WARNING: energy calculation of {values[0]} did not converge.')
 
         initial, final = maginfo.split('final_magmoms=')
