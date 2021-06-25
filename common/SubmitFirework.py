@@ -150,7 +150,7 @@ class SubmitFirework(object):
         sp_firework = Firework(
             [sp_firetask],
             name='singlepoint',
-            spec={'_pass_job_info': True, '_queueadapter': {'walltime': '24:00:00'}},
+            spec={'_pass_job_info': True, '_queueadapter': {'walltime': '48:00:00'}},
             fw_id=1,
         )
 
