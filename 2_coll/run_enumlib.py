@@ -8,6 +8,7 @@ Script which runs enumlib.
 """
 
 import os
+import subprocess
 
 from ase.io import read
 from pymatgen.core.composition import Composition
@@ -76,5 +77,10 @@ with open('struct_enum.in', 'w') as f:
             f.write(f'{int(amount):4d}')
             f.write(f'{int(COMPOSITION.num_atoms):4d}\n')
 
-os.system('/home/michele/softs/enumlib/src/enum.x')
-os.system('/home/michele/softs/enumlib/aux_src/makeStr.py 1 10000')
+process = subprocess.Popen('/home/michele/softs/enumlib/src/enum.x')
+try:
+    process.wait(timeout=60)
+except subprocess.TimeoutExpired:
+    process.kill()
+
+os.system('/home/michele/softs/enumlib/aux_src/makeStr.py 1 200')
