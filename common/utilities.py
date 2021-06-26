@@ -159,14 +159,14 @@ class WriteOutputTask(FiretaskBase):
 
         if 'initial_magmoms' in self:
             magmoms = np.array(self['initial_magmoms'])
-            output_line += '          initial_magmoms={}  '.format(np.array2string(magmoms, 1000))
+            output_line += '          initial_magmoms={}  '.format(np.array2string(magmoms, 10000))
 
             try:
                 magmoms_final = atoms_final.get_magnetic_moments()
             except:
                 magmoms_final = np.zeros(len(magmoms))
 
-            output_line += 'final_magmoms={}\n'.format(np.array2string(magmoms_final, 1000))
+            output_line += 'final_magmoms={}\n'.format(np.array2string(magmoms_final, 10000))
 
         with open(os.path.join(os.environ.get('HOME'), self['filename']), 'a') as f:
             f.write(output_line)
