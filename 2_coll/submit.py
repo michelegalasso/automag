@@ -2,7 +2,7 @@
 automag.2_coll.submit
 =====================
 
-Script which submits collinear relaxations.
+Script which submits collinear single point energy calculations.
 
 .. codeauthor:: Michele Galasso <m.galasso@yandex.com>
 """
@@ -79,12 +79,12 @@ for filename in filenames:
         # relax_run.submit()
 
         # FM configuration
-        relax_run = SubmitFirework(TMP_FILENAME, mode='singlepoint', fix_params=params, magmoms=FM_INIT,
-                                   configuration='fm')
-        relax_run.submit()
+        singlepoint_run = SubmitFirework(TMP_FILENAME, mode='singlepoint', fix_params=params, magmoms=FM_INIT,
+                                         configuration='fm')
+        singlepoint_run.submit()
 
     configuration = 'afm' + filename.split('.')[1]
     # AFM configuration
-    relax_run = SubmitFirework(TMP_FILENAME, mode='singlepoint', fix_params=params, magmoms=AFM_INIT,
-                               configuration=configuration)
-    relax_run.submit()
+    singlepoint_run = SubmitFirework(TMP_FILENAME, mode='singlepoint', fix_params=params, magmoms=AFM_INIT,
+                                     configuration=configuration)
+    singlepoint_run.submit()
