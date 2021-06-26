@@ -32,6 +32,8 @@ def sort_configurations(conf: str):
         return int(conf.strip('afm'))
 
 
+configurations, energies, kept_magmoms = [], [], []
+
 # read lines
 for filename in FILENAMES:
     lines, maginfos = [], []
@@ -44,7 +46,6 @@ for filename in FILENAMES:
 
     # extract the results
     composition = Composition(filename.split('_')[0])
-    configurations, energies, kept_magmoms = [], [], []
     for line, maginfo in zip(lines, maginfos):
         values = line.split()
         configurations.append(values[0])
