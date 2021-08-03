@@ -13,6 +13,12 @@ import matplotlib.pyplot as plt
 
 from pymatgen.core.structure import Structure
 
+# input parameters
+GEOMETRY = '../input/Fe2O3-alpha.vasp'
+NON_MAGNETIC_ATOMS = ['O']
+CUTOFF_RADIUS = 3.8
+N_MAGNETIC_SITES = 12
+
 
 def system(configurations):
     matrix = []
@@ -27,12 +33,6 @@ def system(configurations):
         matrix.append(equation)
     return np.array(matrix)
 
-
-# input parameters
-GEOMETRY = '../input/Fe2O3-alpha.vasp'
-NON_MAGNETIC_ATOMS = ['O']
-CUTOFF_RADIUS = 3.8
-N_MAGNETIC_SITES = 12
 
 structure = Structure.from_file(GEOMETRY)
 structure.remove_species(NON_MAGNETIC_ATOMS)
