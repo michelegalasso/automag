@@ -10,14 +10,14 @@ import numpy as np
 from pymatgen.core.structure import Structure
 
 # input parameters
-RELAXED_GEOMETRY = 'La2Nd2H40-fm-relaxed.vasp'
-NON_MAGNETIC_ATOMS = ['La', 'H']
-CUTOFF_RADIUS = 4.0
-DISTANCES_BETWEEN_NEIGHBORS = [3.57]
-COUPLING_CONSTANTS = [4.25219829e-18]
-NUM_MATERIALS = 1           # set 1 for Curie temperature, 2 for Néel temperature
+GEOMETRY = '../input/Fe2O3-alpha.vasp'
+NON_MAGNETIC_ATOMS = ['O']
+CUTOFF_RADIUS = 3.8
+DISTANCES_BETWEEN_NEIGHBORS = [2.9, 2.97, 3.36, 3.7]
+COUPLING_CONSTANTS = [-8.46830912e-22, -8.30979053e-22, -6.79694911e-21, -4.37347275e-21]
+NUM_MATERIALS = 2           # set 1 for Curie temperature, 2 for Néel temperature
 
-structure = Structure.from_file(RELAXED_GEOMETRY)
+structure = Structure.from_file(GEOMETRY)
 structure.remove_species(NON_MAGNETIC_ATOMS)
 center_indices, point_indices, offset_vectors, distances = structure.get_neighbor_list(CUTOFF_RADIUS)
 
