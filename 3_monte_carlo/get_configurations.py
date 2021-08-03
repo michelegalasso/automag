@@ -20,21 +20,21 @@ from common.insert_elements_in_poscar import insert_elements_in_poscar
 COMPOSITION = Composition('Fe12O18')
 MAGNETIC_ATOM = 'Fe'
 ENUMLIB_DIR = '../2_coll/enumlib'
-RELAXATION_RESULTS = '../2_coll/Fe12O18_relax.txt'
+PREVIOUS_RESULTS = '../2_coll/Fe12O18_singlepoint.txt'
 
 # reference magnetic configurations
 fm_reference = np.array(12 * [4.0] + 18 * [0.0])                    # FM configuration
 afm_reference = np.array(6 * [4.0] + 6 * [-4.0] + 18 * [0.0])       # AFM configuration
 
 
-def get_final_magmoms_and_energy(configuration, relaxation_results):
-    ind_1 = relaxation_results.index(configuration + ' ')
-    ind_2 = relaxation_results.index('\n', ind_1)
-    energy = float(relaxation_results[ind_1:ind_2].split()[-1].split('=')[1])
+def get_final_magmoms_and_energy(configuration, previous_results):
+    ind_1 = previous_results.index(configuration + ' ')
+    ind_2 = previous_results.index('\n', ind_1)
+    energy = float(previous_results[ind_1:ind_2].split()[-1].split('=')[1])
 
-    ind_3 = relaxation_results.index('final_magmoms=[', ind_2) + 15
-    ind_4 = relaxation_results.index(']', ind_3)
-    final_magmoms = [float(item) for item in relaxation_results[ind_3:ind_4].split()]
+    ind_3 = previous_results.index('final_magmoms=[', ind_2) + 15
+    ind_4 = previous_results.index(']', ind_3)
+    final_magmoms = [float(item) for item in previous_results[ind_3:ind_4].split()]
 
     return final_magmoms, energy
 
@@ -46,9 +46,9 @@ for filename in os.listdir(ENUMLIB_DIR):
         filenames.append(filename)
 filenames.sort(key=lambda x: int(x.split('.')[1]))
 
-# read relaxation results
-with open(RELAXATION_RESULTS, 'rt') as f:
-    relaxation_results = f.read()
+# read previous results
+with open(PREVIOUS_RESULTS, 'rt') as f:
+    previous_results = f.read()
 
 # work out configurations
 configurations = []
@@ -63,8 +63,8 @@ for filename in filenames:
     config_number = filename.split('.')[1]
     current_poscar = insert_elements_in_poscar(current_poscar, COMPOSITION, MAGNETIC_ATOM)
 
-    if 'afm' + config_number in relaxation_results:
-        final_magmoms, energy = get_final_magmoms_and_energy('afm' + config_number, relaxation_results)
+    if 'afm' + config_number in previous_results:
+        final_magmoms, energy = get_final_magmoms_and_energy('afm' + config_number, previous_results)
     else:
         continue
 
@@ -80,7 +80,10 @@ for filename in filenames:
                 current_coords = np.array(current_poscar.split('\n'))[np.array(mag_indices) + 8]
                 reference_coords = np.array(geometries[-1][0].split('\n'))[np.array(mag_indices) + 8]
 
-                _, indices = np.where(current_coords[:,None] == reference_coords)
+                current_coords = current_coords.tolist()
+                reference_coords = reference_coords.tolist()
+                indices = [current_coords.index(coord) for coord in reference_coords]
+
                 configuration = np.sign(afm_reference).astype(int)
                 configurations[-1].append(configuration[indices])
                 energies[-1].append(energy)
@@ -103,7 +106,7 @@ for filename in filenames:
             energies.append([energy])
 
         if config_number == '1':
-            final_magmoms, energy = get_final_magmoms_and_energy('fm', relaxation_results)
+            final_magmoms, energy = get_final_magmoms_and_energy('fm', previous_results)
             if np.array_equal(np.around(final_magmoms), fm_reference) or \
                     np.array_equal(np.around(final_magmoms), -fm_reference):
                 configuration = np.sign(fm_reference).astype(int)
