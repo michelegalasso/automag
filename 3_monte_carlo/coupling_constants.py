@@ -16,7 +16,7 @@ from pymatgen.core.structure import Structure
 # input parameters
 GEOMETRY = '../input/Fe2O3-alpha.vasp'
 NON_MAGNETIC_ATOMS = ['O']
-CUTOFF_RADIUS = 3.8
+CUTOFF_RADIUS = 2.95
 N_MAGNETIC_SITES = 12
 
 
@@ -64,8 +64,8 @@ predictions = B @ values[0]
 PCC = np.corrcoef(predictions, energies_control)
 
 magnetic_atom = structure
-plt.rcParams.update({'font.size': 19})
-plt.figure(figsize=(16, 9))
+plt.rcParams.update({'font.size': 15})
+plt.locator_params(axis='x', nbins=5)
 plt.xlabel(f'Heisemberg model free energy (eV/{structure.types_of_species[0].name} atom)')
 plt.ylabel(f'DFT free energy (eV/{structure.types_of_species[0].name} atom)')
 
@@ -77,7 +77,7 @@ if np.linalg.matrix_rank(A) == len(unique_distances) + 1:
     plt.scatter(predictions / N_MAGNETIC_SITES, energies_control / N_MAGNETIC_SITES, label=f'PCC: {PCC[0, 1]:.2f}')
     plt.legend()
     # plt.show()
-    plt.savefig('model.png')
+    plt.savefig('model.png', bbox_inches='tight')
 else:
     print(f'ERROR: SYSTEM OF {np.linalg.matrix_rank(A)} INDEPENDENT EQUATION(S) '
           f'IN {len(unique_distances) + 1} UNKNOWNS!')
