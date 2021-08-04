@@ -18,6 +18,7 @@ GEOMETRY = '../input/Fe2O3-alpha.vasp'
 NON_MAGNETIC_ATOMS = ['O']
 CUTOFF_RADIUS = 2.95
 N_MAGNETIC_SITES = 12
+CONTROL_GROUP_SIZE = 0.4
 
 
 def system(configurations):
@@ -49,8 +50,9 @@ with open('configurations.txt', 'rt') as f:
 with open('energies.txt', 'rt') as f:
     energies = json.load(f)
 
-# create fit and control group 60% to 40%
-index = int(round(len(configurations) * 0.6))
+# create fit and control group
+fit_group_size = 1 - CONTROL_GROUP_SIZE
+index = int(round(len(configurations) * fit_group_size))
 configurations_fit = np.array(configurations[:index])
 configurations_control = np.array(configurations[index:])
 energies_fit = np.array(energies[:index])
