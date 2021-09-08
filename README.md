@@ -38,7 +38,7 @@ obviously replacing `/PATH/TO` with the actual path to these
 files or directories. The `pp` folder is the VASP
 pseudopotential library and it should contain two subfolders
 named, respectively, `potpaw_LDA` and `potpaw_PBE`.
-Depending on the editor that you use on yur local machine
+Depending on the editor that you use on your local machine
 in order to modify and run the code, you may need to add
 the first of these three lines to your `~\.bashrc` file
 in your local machine as well. With the editor Pycharm
