@@ -27,8 +27,8 @@ in order to install Automag there as well. On your
 supercomputer, you need also to create a folder named
 `fw_calcs` in your home directory. Here Automag will save
 the results of calculations. Automag needs to know how to
-launch VASP, so add the following lines to your `~\.bashrc`
-file
+launch VASP, so edit the file `automag/ase/run_vasp.py`
+and add the following lines to your `~\.bashrc` file
 
 - `export PYTHONPATH=/PATH/TO/automag:$PYTHONPATH`
 - `export VASP_SCRIPT=/PATH/TO/automag/ase/run_vasp.py`
