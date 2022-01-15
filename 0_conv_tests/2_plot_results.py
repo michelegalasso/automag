@@ -48,6 +48,7 @@ def single_plot(X, Y, label=None):
             else:
                 print(f'kpts = {x} eV with sigma = {label} gives an error of less than 1 meV/atom w. r. t. '
                       f'the most accurate result.')
+            break
 
     # plot
     if label is None:
