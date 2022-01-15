@@ -60,10 +60,10 @@ class SubmitFirework(object):
         else:
             raise ValueError(f'Value of mode = {mode} not understood.')
 
-        if mode in ['encut', 'kgrid']:
-            self.convergence_test = True
+        if mode == 'encut':
+            self.energy_convergence = True
         else:
-            self.convergence_test = False
+            self.energy_convergence = False
 
         self.magmoms = np.array(magmoms)
         self.mode = mode
@@ -165,7 +165,7 @@ class SubmitFirework(object):
             filename=f"fw_calcs/{atoms.get_chemical_formula(mode='reduce')}_{self.mode}.txt",
             initial_magmoms=self.magmoms,
             read_enthalpy=False,
-            convergence_test=self.convergence_test
+            energy_convergence=self.energy_convergence
         )
         output_firework = Firework(
             [output_firetask],

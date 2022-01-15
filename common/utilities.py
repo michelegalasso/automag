@@ -127,7 +127,7 @@ class WriteOutputTask(FiretaskBase):
     chemical formula, final energy, initial and final magnetic moments for magnetic calculations.
     """
     _fw_name = 'WriteOutputTask'
-    required_params = ['system', 'filename', 'read_enthalpy', 'convergence_test']
+    required_params = ['system', 'filename', 'read_enthalpy', 'energy_convergence']
     optional_params = ['initial_magmoms']
 
     def run_task(self, fw_spec):
@@ -146,7 +146,7 @@ class WriteOutputTask(FiretaskBase):
         analyzer = SpacegroupAnalyzer(structure)
         output_line += '{:10s}  '.format(analyzer.get_space_group_symbol())
 
-        if self['convergence_test']:
+        if self['energy_convergence']:
             errors = []
             with open(os.path.join(job_info_array[-1]['launch_dir'], 'OUTCAR'), 'r') as f:
                 for line in f:
@@ -156,7 +156,7 @@ class WriteOutputTask(FiretaskBase):
             _, indices, counts = np.unique(atoms_final.numbers, return_index=True, return_counts=True)
             reorder = np.argsort(indices)
             num_ions = counts[reorder]
-            correction = np.multiply(errors, num_ions)
+            correction = sum(np.multiply(errors, num_ions))
         else:
             correction = 0
 
