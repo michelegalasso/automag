@@ -22,8 +22,8 @@ path_to_poscar = '../geometries/' + poscar_file
 atoms = read(path_to_poscar)
 
 # minimum and maximum values on the x axis for plotting, can be omitted
-XMIN = 250
-XMAX = 500
+# XMIN = 250
+# XMAX = 1000
 
 
 def single_plot(X, Y, label=None):
@@ -36,15 +36,23 @@ def single_plot(X, Y, label=None):
         X = X[indices]
         Y = Y[indices]
 
+    # sort the arrays
+    indices = np.argsort(X)
+    X = X[indices]
+    Y = Y[indices]
+
+    for x, y in zip(X[:-1], Y[:-1]):
+        if abs(y - Y[-1]) < 0.001:
+            if mode == 'encut':
+                print(f'ENCUT = {x} eV gives an error of less than 1 meV/atom w. r. t. the most accurate result.')
+            else:
+                print(f'kpts = {x} eV with sigma = {label} gives an error of less than 1 meV/atom w. r. t. '
+                      f'the most accurate result.')
+
     # plot
     if label is None:
         plt.plot(X, Y, 'o')
     else:
-        # sort the arrays
-        indices = np.argsort(X)
-        X = X[indices]
-        Y = Y[indices]
-
         plt.plot(X, Y, 'o-', label=label)
 
 
@@ -67,6 +75,7 @@ for line in lines:
 
 if mode == 'encut':
     single_plot(params, energies)
+
 elif mode == 'kgrid':
     sigmas, kptss = [], []
     for param in params:
