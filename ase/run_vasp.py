@@ -15,4 +15,7 @@ import os
 # exitcode = os.system('{}; {}; mpirun -n 16 /home/mgalasso/softs/vasp.5.4.4/bin/vasp_std'.format(load_mkl, load_mpi))
 
 # vasp 5 module
-exitcode = os.system('module load intel/mkl-11.2.3 mpi/impi-5.0.3 vasp/vasp-5.4.4; mpirun vasp_std')
+# exitcode = os.system('module load intel/mkl-11.2.3 mpi/impi-5.0.3 vasp/vasp-5.4.4; mpirun vasp_std')
+
+# vasp 6 module
+exitcode = os.system('module load vasp/6.1.1; mpirun vasp_std')
