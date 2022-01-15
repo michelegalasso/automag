@@ -169,7 +169,7 @@ class WriteOutputTask(FiretaskBase):
 
             output_line += 'enthalpy={}\n'.format(float(enthalpy_line.split()[4]) - correction)
         else:
-            output_line += 'energy={}\n'.format(atoms_final.calc.results['free_energy'] - correction)
+            output_line += 'energy={}\n'.format(atoms_final.calc.results['energy'] - correction)
 
         if 'initial_magmoms' in self:
             magmoms = np.array(self['initial_magmoms'])
