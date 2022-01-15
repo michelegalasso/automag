@@ -1,5 +1,5 @@
 # choose the desired mode: 'encut' or 'kgrid'
-mode = 'encut'
+mode = 'kgrid'
 
 # name of the poscar file to use in the automag/geometries folder
 poscar_file = 'Fe-bcc.vasp'
@@ -15,9 +15,9 @@ params = {
     'ismear': 1,
     'lcharg': False,
     'lwave': False,
-    'sigma': 0.1,
-    'kpts': 30,
-    # 'encut': 670,
+    # 'sigma': 0.1,
+    # 'kpts': 30,
+    'encut': 460,
 }
 
 # choose the atomic types to be considered magnetic (default transition metals)
@@ -27,7 +27,7 @@ params = {
 # configuration = 6 * [4.0] + 6 * [-4.0] + 18 * [0.0]
 
 # choose the trial values for ENCUT (default from 400 to 1000 eV at steps of 10 eV)
-encut_values = range(350, 610, 10)
+# encut_values = range(350, 610, 10)
 
 # choose the trial values for ENCUT (default from 400 to 1000 eV at steps of 10 eV)
 # sigma_values = [0.05, 0.1, 0.2]
