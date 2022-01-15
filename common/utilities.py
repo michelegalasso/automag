@@ -127,7 +127,7 @@ class WriteOutputTask(FiretaskBase):
     chemical formula, final energy, initial and final magnetic moments for magnetic calculations.
     """
     _fw_name = 'WriteOutputTask'
-    required_params = ['system', 'filename', 'read_enthalpy']
+    required_params = ['system', 'filename', 'read_enthalpy', 'convergence_test']
     optional_params = ['initial_magmoms']
 
     def run_task(self, fw_spec):
@@ -146,6 +146,20 @@ class WriteOutputTask(FiretaskBase):
         analyzer = SpacegroupAnalyzer(structure)
         output_line += '{:10s}  '.format(analyzer.get_space_group_symbol())
 
+        if self['convergence_test']:
+            errors = []
+            with open(os.path.join(job_info_array[-1]['launch_dir'], 'OUTCAR'), 'r') as f:
+                for line in f:
+                    if 'kinetic energy error' in line:
+                        errors.append(float(line.split()[5]))
+
+            _, indices, counts = np.unique(atoms_final.numbers, return_index=True, return_counts=True)
+            reorder = np.argsort(indices)
+            num_ions = counts[reorder]
+            correction = np.multiply(errors, num_ions)
+        else:
+            correction = 0
+
         if self['read_enthalpy']:
             # get enthalpy from OUTCAR
             with open(os.path.join(job_info_array[-1]['launch_dir'], 'OUTCAR'), 'r') as f:
@@ -153,9 +167,9 @@ class WriteOutputTask(FiretaskBase):
                     if 'enthalpy' in line:
                         enthalpy_line = line
 
-            output_line += 'enthalpy={}\n'.format(enthalpy_line.split()[4])
+            output_line += 'enthalpy={}\n'.format(float(enthalpy_line.split()[4]) - correction)
         else:
-            output_line += 'energy={}\n'.format(atoms_final.calc.results['free_energy'])
+            output_line += 'energy={}\n'.format(atoms_final.calc.results['free_energy'] - correction)
 
         if 'initial_magmoms' in self:
             magmoms = np.array(self['initial_magmoms'])

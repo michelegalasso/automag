@@ -27,7 +27,7 @@ params = {
 # configuration = 6 * [4.0] + 6 * [-4.0] + 18 * [0.0]
 
 # choose the trial values for ENCUT (default from 400 to 1000 eV at steps of 10 eV)
-encut_values = range(200, 510, 10)
+encut_values = range(250, 510, 10)
 
 # choose the trial values for ENCUT (default from 400 to 1000 eV at steps of 10 eV)
 # sigma_values = [0.05, 0.1, 0.2]
