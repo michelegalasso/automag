@@ -182,5 +182,5 @@ class WriteOutputTask(FiretaskBase):
 
             output_line += 'final_magmoms={}\n'.format(np.array2string(magmoms_final, 10000))
 
-        with open(os.path.join(os.environ.get('HOME'), self['filename']), 'a') as f:
+        with open(os.path.join(os.environ.get('AUTOMAG_PATH'), 'CalcFold', self['filename']), 'a') as f:
             f.write(output_line)

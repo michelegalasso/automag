@@ -162,7 +162,7 @@ class SubmitFirework(object):
         # write output
         output_firetask = WriteOutputTask(
             system=name,
-            filename=f"fw_calcs/{atoms.get_chemical_formula(mode='reduce')}_{self.mode}.txt",
+            filename=f"{atoms.get_chemical_formula(mode='reduce')}_{self.mode}.txt",
             initial_magmoms=self.magmoms,
             read_enthalpy=False,
             energy_convergence=self.energy_convergence
