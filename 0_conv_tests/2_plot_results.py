@@ -47,7 +47,7 @@ def single_plot(X, Y, label=None):
             if mode == 'encut':
                 print(f'ENCUT = {x} eV gives an error of less than 1 meV/atom w. r. t. the most accurate result.')
             else:
-                print(f'kpts = {x} eV with sigma = {label} gives an error of less than 1 meV/atom w. r. t. '
+                print(f'kpts = {x} eV with {label} gives an error of less than 1 meV/atom w. r. t. '
                       f'the most accurate result.')
             break
 
