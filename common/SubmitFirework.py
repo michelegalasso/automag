@@ -26,7 +26,7 @@ class SubmitFirework(object):
     def __init__(self, poscar_file: str, mode: str, fix_params: dict, magmoms: list,
                  encut_values: Union[list, range] = None, sigma_values: Union[list, range] = None,
                  kpts_values: Union[list, range] = None, pert_values: Union[list, range] = None,
-                 bare_dir: str = None, configuration: str = None):
+                 configuration: str = None):
         if mode == 'encut':
             assert encut_values is not None
             assert sigma_values is None
@@ -44,14 +44,8 @@ class SubmitFirework(object):
             assert sigma_values is None
             assert kpts_values is None
             assert pert_values is not None
-            self.var_params = product(pert_values)
-        elif mode == 'singlepoint':
-            assert encut_values is None
-            assert sigma_values is None
-            assert kpts_values is None
-            assert pert_values is None
             self.var_params = []
-        elif mode == 'relax':
+        elif mode in ['relax', 'singlepoint']:
             assert encut_values is None
             assert sigma_values is None
             assert kpts_values is None
@@ -67,10 +61,10 @@ class SubmitFirework(object):
 
         self.magmoms = np.array(magmoms)
         self.mode = mode
-        self.bare_dir = bare_dir
         self.fix_params = fix_params
         self.poscar_file = poscar_file
         self.configuration = configuration
+        self.pert_values = pert_values
 
     def submit(self):
         params = copy(self.fix_params)
@@ -79,9 +73,9 @@ class SubmitFirework(object):
                 if len(values) == 1:
                     if self.mode == 'encut':
                         params['encut'] = values[0]
-                    else:
-                        params['ldauu'] = [values[0], 0, 0]
-                        params['ldauj'] = [values[0], 0, 0]
+                    # else:
+                    #     params['ldauu'] = [values[0], 0, 0]
+                    #     params['ldauj'] = [values[0], 0, 0]
                     name = self.mode + str(values[0])
                 elif len(values) == 2:
                     params['sigma'] = values[0]
@@ -139,20 +133,11 @@ class SubmitFirework(object):
                     magmoms=self.magmoms,
                 )
         else:
-            # single point calculation
-            if self.bare_dir is not None:
-                sp_firetask = VaspCalculationTask(
-                    calc_params=params,
-                    encode=encode,
-                    magmoms=self.magmoms,
-                    bare_dir=self.bare_dir,
-                )
-            else:
-                sp_firetask = VaspCalculationTask(
-                    calc_params=params,
-                    encode=encode,
-                    magmoms=self.magmoms,
-                )
+            sp_firetask = VaspCalculationTask(
+                calc_params=params,
+                encode=encode,
+                magmoms=self.magmoms,
+            )
 
         sp_firework = Firework(
             [sp_firetask],
@@ -161,6 +146,21 @@ class SubmitFirework(object):
             fw_id=1,
         )
         fireworks.append([sp_firework])
+
+        if self.mode == 'perturbations':
+            nsc_firetask = VaspCalculationTask(
+                calc_params=params,
+                encode=encode,
+                magmoms=self.magmoms,
+            )
+
+            nsc_firework = Firework(
+                [sp_firetask],
+                name='singlepoint',
+                spec={'_pass_job_info': True},
+                fw_id=2,
+            )
+            fireworks.append([nsc_firework])
 
         # write output
         output_firetask = WriteOutputTask(
