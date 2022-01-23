@@ -70,15 +70,12 @@ class VaspCalculationTask(FiretaskBase):
     def run_task(self, fw_spec):
         # if pert_step is NSC, copy CHGCAR and WAVECAR from previous step
         if 'pert_step' in self:
-            with open('DEBUG.txt', 'wt') as debug_file:
-                debug_file.write('ura\n')
             if self['pert_step'] == 'NSC':
-                pass
-                # job_info_array = fw_spec['_job_info']
-                # prev_job_info = job_info_array[-1]
-                # os.mkdir('DEBUG')
-                # shutil.copy(os.path.join(prev_job_info['launch_dir'], 'CHGCAR'), 'DEBUG')
-                # shutil.copy(os.path.join(prev_job_info['launch_dir'], 'WAVECAR'), 'DEBUG')
+                job_info_array = fw_spec['_job_info']
+                prev_job_info = job_info_array[-1]
+                os.mkdir('DEBUG')
+                shutil.copy(os.path.join(prev_job_info['launch_dir'], 'CHGCAR'), 'DEBUG')
+                shutil.copy(os.path.join(prev_job_info['launch_dir'], 'WAVECAR'), 'DEBUG')
 
         # if encode is given, use it as input structure
         if 'encode' in self:

@@ -157,7 +157,7 @@ class SubmitFirework(object):
                 )
 
                 nsc_firework = Firework(
-                    [sp_firetask],
+                    [nsc_firetask],
                     name='nsc',
                     spec={'_pass_job_info': True},
                     fw_id=3,
