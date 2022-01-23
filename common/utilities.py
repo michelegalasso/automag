@@ -70,11 +70,18 @@ class VaspCalculationTask(FiretaskBase):
     def run_task(self, fw_spec):
         # if pert_step is NSC, copy CHGCAR and WAVECAR from previous step
         if 'pert_step' in self:
+            self['calc_params']['ldau'] = True
+            self['calc_params']['ldautype'] = 3
+            self['calc_params']['ldaul'] = [2, -1, -1]
+            self['calc_params']['ldauu'] = [0.10, 0.00, 0.00]
+            self['calc_params']['ldauj'] = [0.10, 0.00, 0.00]
+
             if self['pert_step'] == 'NSC':
                 job_info_array = fw_spec['_job_info']
                 prev_job_info = job_info_array[-1]
                 shutil.copy(os.path.join(prev_job_info['launch_dir'], 'CHGCAR'), '.')
                 shutil.copy(os.path.join(prev_job_info['launch_dir'], 'WAVECAR'), '.')
+                self['calc_params']['icharg'] = 11
 
         # if encode is given, use it as input structure
         if 'encode' in self:
