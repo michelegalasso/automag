@@ -102,6 +102,9 @@ class SubmitFirework(object):
         atoms = read(self.poscar_file)
         encode = atoms_to_encode(atoms)
 
+        # here we will collect all fireworks of our workflow
+        fireworks = []
+
         if self.mode == 'relax':
             relax_firetask = VaspCalculationTask(
                 calc_params=params,
@@ -114,6 +117,7 @@ class SubmitFirework(object):
                 spec={'_pass_job_info': True},
                 fw_id=0
             )
+            fireworks.append([relax_firework])
 
             energy_params = {}
             for key, value in params.items():
@@ -135,8 +139,6 @@ class SubmitFirework(object):
                     magmoms=self.magmoms,
                 )
         else:
-            relax_firework = None
-
             # single point calculation
             if self.bare_dir is not None:
                 sp_firetask = VaspCalculationTask(
@@ -158,6 +160,7 @@ class SubmitFirework(object):
             spec={'_pass_job_info': True},
             fw_id=1,
         )
+        fireworks.append([sp_firework])
 
         # write output
         output_firetask = WriteOutputTask(
@@ -173,11 +176,18 @@ class SubmitFirework(object):
             spec={'_queueadapter': {'ntasks': 1, 'walltime': '00:30:00'}},
             fw_id=2
         )
+        fireworks.append([output_firework])
 
         # package the fireworks into a workflow and submit to the launchpad
-        if relax_firework is not None:
-            workflow = Workflow([relax_firework, sp_firework, output_firework], name=name,
-                                links_dict={0: [1], 1: [2], 2:[]})
-        else:
-            workflow = Workflow([sp_firework, output_firework], name=name, links_dict={1: [2], 2: []})
+        flat_fireworks = [fw for sublist in fireworks for fw in sublist]
+
+        links_dict = {}
+        for i, level in enumerate(fireworks[:-1]):
+            if len(level) == 1:
+                links_dict[level[0].fw_id] = [item.fw_id for item in fireworks[i + 1]]
+            else:
+                for j, fw in enumerate(level):
+                    links_dict[fw.fw_id] = [fireworks[i + 1][j].fw_id]
+
+        workflow = Workflow(flat_fireworks, name=name, links_dict=links_dict)
         launchpad.add_wf(workflow)

@@ -13,7 +13,7 @@ from ase.io import read, write
 from common.SubmitFirework import SubmitFirework
 
 # location of the poscar file with the input structure
-atoms = read('../input/Fe2O3-alpha.vasp')
+atoms = read('../geometries/Fe2O3-alpha.vasp')
 
 # choose the magnetic state to use for U calculation
 magmoms = 12 * [4.0] + 18 * [0.0]
