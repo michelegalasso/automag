@@ -65,13 +65,16 @@ class VaspCalculationTask(FiretaskBase):
     """
     _fw_name = 'VaspCalculationTask'
     required_params = ['calc_params']
-    optional_params = ['encode', 'magmoms', 'bare_dir']
+    optional_params = ['encode', 'magmoms', 'pert_step']
 
     def run_task(self, fw_spec):
-        # if bare_dir is given, copy CHGCAR and WAVECAR from it
-        if 'bare_dir' in self:
-            shutil.copy(os.path.join(self['bare_dir'], 'CHGCAR'), '.')
-            shutil.copy(os.path.join(self['bare_dir'], 'WAVECAR'), '.')
+        # if pert_step is given, copy CHGCAR and WAVECAR from it
+        if 'pert_step' in self:
+            job_info_array = fw_spec['_job_info']
+            prev_job_info = job_info_array[-1]
+            os.mkdir('DEBUG')
+            shutil.copy(os.path.join(prev_job_info['launch_dir'], 'CHGCAR'), 'DEBUG')
+            shutil.copy(os.path.join(prev_job_info['launch_dir'], 'WAVECAR'), 'DEBUG')
 
         # if encode is given, use it as input structure
         if 'encode' in self:

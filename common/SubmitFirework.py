@@ -148,19 +148,21 @@ class SubmitFirework(object):
         fireworks.append([sp_firework])
 
         if self.mode == 'perturbations':
-            nsc_firetask = VaspCalculationTask(
-                calc_params=params,
-                encode=encode,
-                magmoms=self.magmoms,
-            )
+            for perturbation in self.pert_values:
+                nsc_firetask = VaspCalculationTask(
+                    calc_params=params,
+                    encode=encode,
+                    magmoms=self.magmoms,
+                    pert_step='NSC',
+                )
 
-            nsc_firework = Firework(
-                [sp_firetask],
-                name='singlepoint',
-                spec={'_pass_job_info': True},
-                fw_id=2,
-            )
-            fireworks.append([nsc_firework])
+                nsc_firework = Firework(
+                    [sp_firetask],
+                    name='singlepoint',
+                    spec={'_pass_job_info': True},
+                    fw_id=3,
+                )
+                fireworks.append([nsc_firework])
 
         # write output
         output_firetask = WriteOutputTask(

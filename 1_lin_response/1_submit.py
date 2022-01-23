@@ -7,27 +7,38 @@ Script which submits linear response U calculations.
 .. codeauthor:: Michele Galasso <m.galasso@yandex.com>
 """
 
-from copy import copy
+from input import *
+
 from ase.io import read, write
+from pymatgen.core.structure import Structure
 
 from common.SubmitFirework import SubmitFirework
 
-# location of the poscar file with the input structure
-atoms = read('../geometries/Fe2O3-alpha.vasp')
+# full path to poscar file
+path_to_poscar = '../geometries/' + poscar_file
 
-# choose the magnetic state to use for U calculation
-magmoms = 12 * [4.0] + 18 * [0.0]
+# create ase.Atoms object
+atoms = read(path_to_poscar)
 
-# choose the desired mode: 'BARE', 'NSC' or 'SC'
-MODE = 'BARE'
+if 'configuration' not in globals():
+    configuration = []
+    structure = Structure.from_file(path_to_poscar)
+    for atom in structure.species:
+        if 'magnetic_atoms' not in globals():
+            if atom.is_transition_metal:
+                configuration.append(4.0)
+            else:
+                configuration.append(0.0)
+        else:
+            if atom in magnetic_atoms:
+                configuration.append(4.0)
+            else:
+                configuration.append(0.0)
 
-# launchdir of the bare run
-BARE_DIR = '/cephfs/home/mgalasso/fw_calcs/block_2021-01-09-08-46-32-079078/launcher_2021-01-19-12-25-04-409802'
-
-# change first Fe atom to Ni and save in a poscar file
-poscar_file = 'onefakeatom.vasp'
+# insert dummy atom and save in a poscar file
+poscar_file = 'onedummyatom.vasp'
 ch_symbols = atoms.get_chemical_symbols()
-ch_symbols[0] = 'Ni'
+ch_symbols[dummy_position] = dummy_atom
 atoms.set_chemical_symbols(ch_symbols)
 write(poscar_file, atoms)
 
@@ -37,39 +48,39 @@ bare_params = {
     'setups': 'recommended',
     'prec': 'Accurate',
     'ncore': 4,
-    'encut': 670,
+    'encut': 820,
     'ediff': 1e-6,
     'ismear': 0,
-    'sigma': 0.2,
+    'sigma': 0.05,
     # 'nbands': 148,
     # 'pstress': 1500,
-    'kpts': 30,
+    'kpts': 20,
     'lmaxmix': 4,
 }
 
-# submit bare run
-if MODE == 'BARE':
-    bare_run = SubmitFirework(poscar_file, mode='singlepoint', fix_params=bare_params, magmoms=magmoms)
-    bare_run.submit()
+# submit calculations
+run = SubmitFirework(poscar_file, mode='perturbations', fix_params=bare_params, pert_values=[0.10],
+                              magmoms=configuration)
+run.submit()
 
 # submit non-selfconsistent response
-nsc_params = copy(bare_params)
-nsc_params['ldau'] = True
-nsc_params['ldautype'] = 3
-nsc_params['ldaul'] = [2, -1, -1]
-nsc_params['icharg'] = 11
-
-perturbations = [-0.08, -0.05, -0.02, 0.02, 0.05, 0.08]
-if MODE == 'NSC':
-    nsc_run = SubmitFirework(poscar_file, mode='perturbations', fix_params=nsc_params, magmoms=magmoms,
-                             pert_values=perturbations, bare_dir=BARE_DIR)
-    nsc_run.submit()
-
-# submit selfconsistent response
-sc_params = copy(nsc_params)
-del sc_params['icharg']
-
-if MODE == 'SC':
-    nsc_run = SubmitFirework(poscar_file, mode='perturbations', fix_params=sc_params, magmoms=magmoms,
-                             pert_values=perturbations)
-    nsc_run.submit()
+# nsc_params = copy(bare_params)
+# nsc_params['ldau'] = True
+# nsc_params['ldautype'] = 3
+# nsc_params['ldaul'] = [2, -1, -1]
+# nsc_params['icharg'] = 11
+#
+# perturbations = [-0.08, -0.05, -0.02, 0.02, 0.05, 0.08]
+# if MODE == 'NSC':
+#     nsc_run = SubmitFirework(poscar_file, mode='perturbations', fix_params=nsc_params, magmoms=magmoms,
+#                              pert_values=perturbations, bare_dir=BARE_DIR)
+#     nsc_run.submit()
+#
+# # submit selfconsistent response
+# sc_params = copy(nsc_params)
+# del sc_params['icharg']
+#
+# if MODE == 'SC':
+#     nsc_run = SubmitFirework(poscar_file, mode='perturbations', fix_params=sc_params, magmoms=magmoms,
+#                              pert_values=perturbations)
+#     nsc_run.submit()
