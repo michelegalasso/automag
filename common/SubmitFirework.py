@@ -149,6 +149,13 @@ class SubmitFirework(object):
 
         if self.mode == 'perturbations':
             for perturbation in self.pert_values:
+                params['ldau'] = True
+                params['icharg'] = 11
+                params['ldautype'] = 3
+                params['ldaul'] = [2, -1, -1]
+                params['ldauu'] = [perturbation, 0.00, 0.00]
+                params['ldauj'] = [perturbation, 0.00, 0.00]
+
                 nsc_firetask = VaspCalculationTask(
                     calc_params=params,
                     encode=encode,

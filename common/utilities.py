@@ -73,9 +73,8 @@ class VaspCalculationTask(FiretaskBase):
             if self['pert_step'] == 'NSC':
                 job_info_array = fw_spec['_job_info']
                 prev_job_info = job_info_array[-1]
-                os.mkdir('DEBUG')
-                shutil.copy(os.path.join(prev_job_info['launch_dir'], 'CHGCAR'), 'DEBUG')
-                shutil.copy(os.path.join(prev_job_info['launch_dir'], 'WAVECAR'), 'DEBUG')
+                shutil.copy(os.path.join(prev_job_info['launch_dir'], 'CHGCAR'), '.')
+                shutil.copy(os.path.join(prev_job_info['launch_dir'], 'WAVECAR'), '.')
 
         # if encode is given, use it as input structure
         if 'encode' in self:
