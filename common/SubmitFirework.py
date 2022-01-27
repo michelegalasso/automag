@@ -166,7 +166,7 @@ class SubmitFirework(object):
         fireworks.append([sp_firework])
 
         if self.mode == 'perturbations':
-            next_id = 3
+            next_id = 2
             nsc_fireworks = []
             out_nsc_fireworks = []
             for perturbation in self.pert_values:
