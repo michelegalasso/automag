@@ -193,7 +193,6 @@ class SubmitFirework(object):
                 out_nsc_firetask = WriteChargesTask(
                     filename='charges.txt',
                     pert_value=perturbation,
-                    dummy_atom=self.dummy_atom,
                     atom_ucalc=atom_ucalc,
                     initial_magmoms=self.magmoms,
                 )
