@@ -35,13 +35,6 @@ if 'configuration' not in globals():
             else:
                 configuration.append(0.0)
 
-# insert dummy atom and save in a poscar file
-poscar_file = 'onedummyatom.vasp'
-ch_symbols = atoms.get_chemical_symbols()
-ch_symbols[dummy_position] = dummy_atom
-atoms.set_chemical_symbols(ch_symbols)
-write(poscar_file, atoms)
-
 # define the VASP parameters
 bare_params = {
     'xc': 'PBE',
@@ -59,8 +52,8 @@ bare_params = {
 }
 
 # submit calculations
-run = SubmitFirework(poscar_file, mode='perturbations', fix_params=bare_params, pert_values=[-0.08, -0.05],
-                              magmoms=configuration)
+run = SubmitFirework(path_to_poscar, mode='perturbations', fix_params=bare_params, pert_values=[-0.08, -0.05],
+                     magmoms=configuration, dummy_atom=dummy_atom, dummy_position=dummy_position)
 run.submit()
 
 # submit non-selfconsistent response

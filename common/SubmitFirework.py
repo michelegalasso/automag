@@ -26,30 +26,38 @@ class SubmitFirework(object):
     def __init__(self, poscar_file: str, mode: str, fix_params: dict, magmoms: list,
                  encut_values: Union[list, range] = None, sigma_values: Union[list, range] = None,
                  kpts_values: Union[list, range] = None, pert_values: Union[list, range] = None,
-                 configuration: str = None):
+                 configuration: str = None, dummy_atom: str = None, dummy_position: int = None):
         if mode == 'encut':
             assert encut_values is not None
             assert sigma_values is None
             assert kpts_values is None
             assert pert_values is None
+            assert dummy_atom is None
+            assert dummy_position is None
             self.var_params = product(encut_values)
         elif mode == 'kgrid':
             assert encut_values is None
             assert sigma_values is not None
             assert kpts_values is not None
             assert pert_values is None
+            assert dummy_atom is None
+            assert dummy_position is None
             self.var_params = product(sigma_values, kpts_values)
         elif mode == 'perturbations':
             assert encut_values is None
             assert sigma_values is None
             assert kpts_values is None
             assert pert_values is not None
+            assert dummy_atom is not None
+            assert dummy_position is not None
             self.var_params = []
         elif mode in ['relax', 'singlepoint']:
             assert encut_values is None
             assert sigma_values is None
             assert kpts_values is None
             assert pert_values is None
+            assert dummy_atom is None
+            assert dummy_position is None
             self.var_params = []
         else:
             raise ValueError(f'Value of mode = {mode} not understood.')
@@ -65,6 +73,8 @@ class SubmitFirework(object):
         self.poscar_file = poscar_file
         self.configuration = configuration
         self.pert_values = pert_values
+        self.dummy_atom = dummy_atom
+        self.dummy_position = dummy_position
 
     def submit(self):
         params = copy(self.fix_params)
@@ -93,8 +103,16 @@ class SubmitFirework(object):
 
     def add_wflow(self, params, name):
         # create an atoms object and encode it
-        atoms = read(self.poscar_file)
-        encode = atoms_to_encode(atoms)
+        if self.mode == 'perturbations':
+            atoms = read(self.poscar_file)
+            ch_symbols = atoms.get_chemical_symbols()
+            atom_ucalc = ch_symbols[self.dummy_position]
+            ch_symbols[self.dummy_position] = self.dummy_atom
+            atoms.set_chemical_symbols(ch_symbols)
+            encode = atoms_to_encode(atoms)
+        else:
+            atoms = read(self.poscar_file)
+            encode = atoms_to_encode(atoms)
 
         # here we will collect all fireworks of our workflow
         fireworks = []
@@ -157,6 +175,8 @@ class SubmitFirework(object):
                     magmoms=self.magmoms,
                     pert_step='NSC',
                     pert_value=perturbation,
+                    dummy_atom=self.dummy_atom,
+                    atom_ucalc=atom_ucalc,
                 )
 
                 nsc_firework = Firework(

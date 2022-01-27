@@ -18,6 +18,7 @@ from ase.calculators.vasp import Vasp
 from fireworks import FiretaskBase, explicit_serialize
 from pymatgen.core.structure import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+from pymatgen.core.periodic_table import Element
 
 
 def atoms_to_encode(atoms):
@@ -65,24 +66,9 @@ class VaspCalculationTask(FiretaskBase):
     """
     _fw_name = 'VaspCalculationTask'
     required_params = ['calc_params']
-    optional_params = ['encode', 'magmoms', 'pert_step', 'pert_value']
+    optional_params = ['encode', 'magmoms', 'pert_step', 'pert_value', 'dummy_atom', 'atom_ucalc']
 
     def run_task(self, fw_spec):
-        # if pert_step is NSC, copy CHGCAR and WAVECAR from previous step
-        if 'pert_step' in self:
-            self['calc_params']['ldau'] = True
-            self['calc_params']['ldautype'] = 3
-            self['calc_params']['ldaul'] = [2, -1, -1]
-            self['calc_params']['ldauu'] = [self['pert_value'], 0.00, 0.00]
-            self['calc_params']['ldauj'] = [self['pert_value'], 0.00, 0.00]
-
-            if self['pert_step'] == 'NSC':
-                job_info_array = fw_spec['_job_info']
-                prev_job_info = job_info_array[-1]
-                shutil.copy(os.path.join(prev_job_info['launch_dir'], 'CHGCAR'), '.')
-                shutil.copy(os.path.join(prev_job_info['launch_dir'], 'WAVECAR'), '.')
-                self['calc_params']['icharg'] = 11
-
         # if encode is given, use it as input structure
         if 'encode' in self:
             atoms = encode_to_atoms(self['encode'])
@@ -92,6 +78,41 @@ class VaspCalculationTask(FiretaskBase):
             job_info_array = fw_spec['_job_info']
             prev_job_info = job_info_array[-1]
             atoms = read(os.path.join(prev_job_info['launch_dir'], 'OUTCAR'))
+
+        # if pert_step is NSC, copy CHGCAR and WAVECAR from previous step
+        if 'pert_step' in self:
+            atom_ucalc = Element(self['atom_ucalc'])
+            elem_list_sorted, indices = np.unique(atoms.get_chemical_symbols(), return_index=True)
+            elem_list = elem_list_sorted[np.argsort(indices)]
+
+            self['calc_params']['ldaul'] = []
+            self['calc_params']['ldauu'] = []
+            self['calc_params']['ldauj'] = []
+            for atom in elem_list:
+                if atom == self['dummy_atom']:
+                    if atom_ucalc.is_transition_metal:
+                        self['calc_params']['ldaul'].append(2)
+                    elif atom_ucalc.is_lanthanoid or atom_ucalc.is_actinoid:
+                        self['calc_params']['ldaul'].append(3)
+                    else:
+                        raise ValueError(f"Cannot calculate U for the element {self['atom_ucalc']}")
+
+                    self['calc_params']['ldauu'].append(self['pert_value'])
+                    self['calc_params']['ldauj'].append(self['pert_value'])
+                else:
+                    self['calc_params']['ldaul'].append(-1)
+                    self['calc_params']['ldauu'].append(0)
+                    self['calc_params']['ldauj'].append(0)
+
+            self['calc_params']['ldau'] = True
+            self['calc_params']['ldautype'] = 3
+
+            if self['pert_step'] == 'NSC':
+                job_info_array = fw_spec['_job_info']
+                prev_job_info = job_info_array[-1]
+                shutil.copy(os.path.join(prev_job_info['launch_dir'], 'CHGCAR'), '.')
+                shutil.copy(os.path.join(prev_job_info['launch_dir'], 'WAVECAR'), '.')
+                self['calc_params']['icharg'] = 11
 
         # if magnetic calculation
         if 'magmoms' in self:
@@ -164,8 +185,7 @@ class WriteOutputTask(FiretaskBase):
                         errors.append(float(line.split()[5]))
 
             _, indices, counts = np.unique(atoms_final.numbers, return_index=True, return_counts=True)
-            reorder = np.argsort(indices)
-            num_ions = counts[reorder]
+            num_ions = counts[np.argsort(indices)]
             correction = sum(np.multiply(errors, num_ions))
         else:
             correction = 0
