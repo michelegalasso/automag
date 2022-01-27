@@ -35,21 +35,7 @@ if 'configuration' not in globals():
             else:
                 configuration.append(0.0)
 
-# define the VASP parameters
-bare_params = {
-    'xc': 'PBE',
-    'setups': 'recommended',
-    'prec': 'Accurate',
-    'ncore': 4,
-    'encut': 820,
-    'ediff': 1e-6,
-    'ismear': 0,
-    'sigma': 0.05,
-    'kpts': 20,
-    'lmaxmix': 4,
-}
-
 # submit calculations
-run = SubmitFirework(path_to_poscar, mode='perturbations', fix_params=bare_params, pert_values=perturbations,
+run = SubmitFirework(path_to_poscar, mode='perturbations', fix_params=params, pert_values=perturbations,
                      magmoms=configuration, dummy_atom=dummy_atom, dummy_position=dummy_position)
 run.submit()

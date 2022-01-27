@@ -19,7 +19,8 @@ params = {
     'encut': 820,
     'ediff': 1e-6,
     'ismear': 0,
-    'sigma': 0.2,
+    'sigma': 0.05,
+    'kpts': 20,
     'lmaxmix': 4,
     'nelm': 100,
 }
