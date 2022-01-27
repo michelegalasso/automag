@@ -65,7 +65,7 @@ class VaspCalculationTask(FiretaskBase):
     """
     _fw_name = 'VaspCalculationTask'
     required_params = ['calc_params']
-    optional_params = ['encode', 'magmoms', 'pert_step']
+    optional_params = ['encode', 'magmoms', 'pert_step', 'pert_value']
 
     def run_task(self, fw_spec):
         # if pert_step is NSC, copy CHGCAR and WAVECAR from previous step
@@ -73,8 +73,8 @@ class VaspCalculationTask(FiretaskBase):
             self['calc_params']['ldau'] = True
             self['calc_params']['ldautype'] = 3
             self['calc_params']['ldaul'] = [2, -1, -1]
-            self['calc_params']['ldauu'] = [0.10, 0.00, 0.00]
-            self['calc_params']['ldauj'] = [0.10, 0.00, 0.00]
+            self['calc_params']['ldauu'] = [self['pert_value'], 0.00, 0.00]
+            self['calc_params']['ldauj'] = [self['pert_value'], 0.00, 0.00]
 
             if self['pert_step'] == 'NSC':
                 job_info_array = fw_spec['_job_info']

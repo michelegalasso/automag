@@ -59,7 +59,7 @@ bare_params = {
 }
 
 # submit calculations
-run = SubmitFirework(poscar_file, mode='perturbations', fix_params=bare_params, pert_values=[0.10],
+run = SubmitFirework(poscar_file, mode='perturbations', fix_params=bare_params, pert_values=[-0.08, -0.05],
                               magmoms=configuration)
 run.submit()
 

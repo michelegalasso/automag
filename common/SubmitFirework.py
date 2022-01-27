@@ -148,21 +148,28 @@ class SubmitFirework(object):
         fireworks.append([sp_firework])
 
         if self.mode == 'perturbations':
+            next_id = 3
+            nsc_fireworks = []
             for perturbation in self.pert_values:
                 nsc_firetask = VaspCalculationTask(
                     calc_params=params,
                     encode=encode,
                     magmoms=self.magmoms,
                     pert_step='NSC',
+                    pert_value=perturbation,
                 )
 
                 nsc_firework = Firework(
                     [nsc_firetask],
                     name='nsc',
                     spec={'_pass_job_info': True},
-                    fw_id=3,
+                    fw_id=next_id,
                 )
-                fireworks.append([nsc_firework])
+
+                nsc_fireworks.append(nsc_firework)
+                next_id += 1
+
+            fireworks.append(nsc_fireworks)
 
         # write output
         output_firetask = WriteOutputTask(
@@ -185,11 +192,15 @@ class SubmitFirework(object):
 
         links_dict = {}
         for i, level in enumerate(fireworks[:-1]):
+            next_level = fireworks[i + 1]
             if len(level) == 1:
-                links_dict[level[0].fw_id] = [item.fw_id for item in fireworks[i + 1]]
+                links_dict[level[0].fw_id] = [item.fw_id for item in next_level]
+            elif len(next_level) == 1:
+                for fw in level:
+                    links_dict[fw.fw_id] = [next_level[0].fw_id]
             else:
                 for j, fw in enumerate(level):
-                    links_dict[fw.fw_id] = [fireworks[i + 1][j].fw_id]
+                    links_dict[fw.fw_id] = [next_level[j].fw_id]
 
         workflow = Workflow(flat_fireworks, name=name, links_dict=links_dict)
         launchpad.add_wf(workflow)
