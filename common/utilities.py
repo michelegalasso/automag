@@ -80,7 +80,6 @@ class VaspCalculationTask(FiretaskBase):
             prev_job_info = job_info_array[-1]
             atoms = read(os.path.join(prev_job_info['launch_dir'], 'OUTCAR'))
 
-        # if pert_step is NSC, copy CHGCAR and WAVECAR from previous step
         if 'pert_step' in self:
             atom_ucalc = Element(self['atom_ucalc'])
             elem_list_sorted, indices = np.unique(atoms.get_chemical_symbols(), return_index=True)
@@ -108,6 +107,7 @@ class VaspCalculationTask(FiretaskBase):
             self['calc_params']['ldau'] = True
             self['calc_params']['ldautype'] = 3
 
+            # if pert_step is NSC, copy CHGCAR and WAVECAR from previous step
             if self['pert_step'] == 'NSC':
                 job_info_array = fw_spec['_job_info']
                 prev_job_info = job_info_array[-1]
@@ -222,30 +222,35 @@ class WriteChargesTask(FiretaskBase):
     Write charges for U calculation.
     """
     _fw_name = 'WriteChargesTask'
-    required_params = ['filename', 'pert_value', 'atom_ucalc']
+    required_params = ['filename', 'pert_value', 'dummy_atom', 'atom_ucalc']
     optional_params = ['initial_magmoms']
 
     def run_task(self, fw_spec):
         job_info_array = fw_spec['_job_info']
         outcar = Outcar(os.path.join(job_info_array[-1]['launch_dir'], 'OUTCAR'))
-        atoms_final = read(os.path.join(job_info_array[-1]['launch_dir'], 'OUTCAR'))
-        ch_symbols = atoms_final.get_chemical_symbols()
 
-        charges = []
-        for i, ch_symbol in enumerate(ch_symbols):
-            if ch_symbol == self['atom_ucalc']:
-                if 'f' in outcar.charge[i]:
-                    charges.append(outcar.charge[i]['f'])
+        with open(os.path.join(job_info_array[-1]['launch_dir'], 'POSCAR'), 'rt') as f:
+            poscar_lines = f.readlines()
+        elem_list = poscar_lines[0].split()
+        num_ions = [int(item) for item in poscar_lines[5].split()]
+
+        dummy_index = 0
+        for elem, amount in zip(elem_list, num_ions):
+            if elem == self['dummy_atom']:
+                if amount == 1:
+                    break
                 else:
-                    charges.append(outcar.charge[i]['d'])
+                    raise ValueError('More than one dummy atom in the structure')
+            else:
+                dummy_index += amount
 
-        if self['pert_value'] < 0:
-            index = np.argmin(charges)
+        if 'f' in outcar.charge[dummy_index]:
+            charge = outcar.charge[dummy_index]['f']
         else:
-            index = np.argmax(charges)
+            charge = outcar.charge[dummy_index]['d']
 
         with open(os.path.join(os.environ.get('AUTOMAG_PATH'), 'CalcFold', self['filename']), 'a') as f:
-            f.write(f"idx={index:<3d}  {self['pert_value']:5.2f}  {charges[index]}")
+            f.write(f"{self['pert_value']:5.2f}  {charge}\n")
 
         if 'initial_magmoms' in self:
             pass
