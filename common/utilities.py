@@ -249,6 +249,8 @@ class WriteChargesTask(FiretaskBase):
         for step in [1, 2]:
             incar = Incar.from_file(os.path.join(job_info_array[step]['launch_dir'], 'INCAR'))
             outcar = Outcar(os.path.join(job_info_array[step]['launch_dir'], 'OUTCAR'))
+            with open(os.path.join(job_info_array[step]['launch_dir'], 'is_converged'), 'r') as f:
+                conv_info = f.readline()
 
             if 'f' in outcar.charge[dummy_index]:
                 charges.append(outcar.charge[dummy_index]['f'])
@@ -260,7 +262,8 @@ class WriteChargesTask(FiretaskBase):
             for initial_magmom, final_magmom in zip(initial_magmoms, final_magmoms):
                 if initial_magmom != 0:
                     # if the magnetic moment changes too much, do not write charges in output
-                    if final_magmom / initial_magmom < 0.5 or final_magmom / initial_magmom > 2:
+                    if final_magmom / initial_magmom < 0.5 or final_magmom / initial_magmom > 2 \
+                            or conv_info == 'NONCONVERGED':
                         write_output = False
 
         if write_output:

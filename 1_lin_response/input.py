@@ -21,6 +21,7 @@ params = {
     'ismear': 0,
     'sigma': 0.2,
     'lmaxmix': 4,
+    'nelm': 100,
 }
 
 # choose the atomic types to be considered magnetic (default transition metals)
