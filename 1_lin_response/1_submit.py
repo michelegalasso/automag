@@ -9,7 +9,7 @@ Script which submits linear response U calculations.
 
 from input import *
 
-from ase.io import read, write
+from ase.io import read
 from pymatgen.core.structure import Structure
 
 from common.SubmitFirework import SubmitFirework

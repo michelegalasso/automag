@@ -194,14 +194,12 @@ class SubmitFirework(object):
                     filename='charges.txt',
                     pert_value=perturbation,
                     dummy_atom=self.dummy_atom,
-                    atom_ucalc=atom_ucalc,
-                    initial_magmoms=self.magmoms,
                 )
                 out_nsc_firework = Firework(
                     [out_nsc_firetask],
                     name='write_output',
                     spec={'_queueadapter': {'ntasks': 1, 'walltime': '00:30:00'}},
-                    fw_id=next_id
+                    fw_id=next_id,
                 )
 
                 out_nsc_fireworks.append(out_nsc_firework)
@@ -216,13 +214,13 @@ class SubmitFirework(object):
                 filename=f"{atoms.get_chemical_formula(mode='reduce')}_{self.mode}.txt",
                 initial_magmoms=self.magmoms,
                 read_enthalpy=False,
-                energy_convergence=self.energy_convergence
+                energy_convergence=self.energy_convergence,
             )
             output_firework = Firework(
                 [output_firetask],
                 name='write_output',
                 spec={'_queueadapter': {'ntasks': 1, 'walltime': '00:30:00'}},
-                fw_id=2
+                fw_id=2,
             )
             fireworks.append([output_firework])
 

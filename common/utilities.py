@@ -19,7 +19,7 @@ from fireworks import FiretaskBase, explicit_serialize
 from pymatgen.core.structure import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.core.periodic_table import Element
-from pymatgen.io.vasp.outputs import Outcar
+from pymatgen.io.vasp import Incar, Outcar
 
 
 def atoms_to_encode(atoms):
@@ -222,11 +222,11 @@ class WriteChargesTask(FiretaskBase):
     Write charges for U calculation.
     """
     _fw_name = 'WriteChargesTask'
-    required_params = ['filename', 'pert_value', 'dummy_atom', 'atom_ucalc']
-    optional_params = ['initial_magmoms']
+    required_params = ['filename', 'pert_value', 'dummy_atom']
 
     def run_task(self, fw_spec):
         job_info_array = fw_spec['_job_info']
+        incar = Incar.from_file(os.path.join(job_info_array[-1]['launch_dir'], 'INCAR'))
         outcar = Outcar(os.path.join(job_info_array[-1]['launch_dir'], 'OUTCAR'))
 
         with open(os.path.join(job_info_array[-1]['launch_dir'], 'POSCAR'), 'rt') as f:
@@ -249,8 +249,15 @@ class WriteChargesTask(FiretaskBase):
         else:
             charge = outcar.charge[dummy_index]['d']
 
-        with open(os.path.join(os.environ.get('AUTOMAG_PATH'), 'CalcFold', self['filename']), 'a') as f:
-            f.write(f"{self['pert_value']:5.2f}  {charge}\n")
+        write_output = True
+        initial_magmoms = incar['MAGMOM']
+        final_magmoms = [item['tot'] for item in outcar.magnetization]
+        for initial_magmom, final_magmom in zip(initial_magmoms, final_magmoms):
+            if initial_magmom != 0:
+                # if the magnetic moment changes too much, exclude this perturbation from output
+                if final_magmom / initial_magmom < 0.5 or final_magmom / initial_magmom > 2:
+                    write_output = False
 
-        if 'initial_magmoms' in self:
-            pass
+        if write_output:
+            with open(os.path.join(os.environ.get('AUTOMAG_PATH'), 'CalcFold', self['filename']), 'a') as f:
+                f.write(f"{self['pert_value']:5.2f}  {charge}\n")
