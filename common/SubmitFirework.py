@@ -168,7 +168,8 @@ class SubmitFirework(object):
         if self.mode == 'perturbations':
             next_id = 2
             nsc_fireworks = []
-            out_nsc_fireworks = []
+            sc_fireworks = []
+            out_fireworks = []
             for perturbation in self.pert_values:
                 nsc_firetask = VaspCalculationTask(
                     calc_params=params,
@@ -190,23 +191,44 @@ class SubmitFirework(object):
                 nsc_fireworks.append(nsc_firework)
                 next_id += 1
 
-                out_nsc_firetask = WriteChargesTask(
+                sc_firetask = VaspCalculationTask(
+                    calc_params=params,
+                    encode=encode,
+                    magmoms=self.magmoms,
+                    pert_step='SC',
+                    pert_value=perturbation,
+                    dummy_atom=self.dummy_atom,
+                    atom_ucalc=atom_ucalc,
+                )
+
+                sc_firework = Firework(
+                    [sc_firetask],
+                    name='sc',
+                    spec={'_pass_job_info': True},
+                    fw_id=next_id,
+                )
+
+                sc_fireworks.append(sc_firework)
+                next_id += 1
+
+                out_firetask = WriteChargesTask(
                     filename='charges.txt',
                     pert_value=perturbation,
                     dummy_atom=self.dummy_atom,
                 )
-                out_nsc_firework = Firework(
-                    [out_nsc_firetask],
-                    name='write_output',
+                out_firework = Firework(
+                    [out_firetask],
+                    name='write_charges',
                     spec={'_queueadapter': {'ntasks': 1, 'walltime': '00:30:00'}},
                     fw_id=next_id,
                 )
 
-                out_nsc_fireworks.append(out_nsc_firework)
+                out_fireworks.append(out_firework)
                 next_id += 1
 
             fireworks.append(nsc_fireworks)
-            fireworks.append(out_nsc_fireworks)
+            fireworks.append(sc_fireworks)
+            fireworks.append(out_fireworks)
         else:
             # write output
             output_firetask = WriteOutputTask(

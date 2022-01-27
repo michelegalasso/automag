@@ -107,12 +107,13 @@ class VaspCalculationTask(FiretaskBase):
             self['calc_params']['ldau'] = True
             self['calc_params']['ldautype'] = 3
 
-            # if pert_step is NSC, copy CHGCAR and WAVECAR from previous step
+            job_info_array = fw_spec['_job_info']
+            prev_job_info = job_info_array[-1]
+            shutil.copy(os.path.join(prev_job_info['launch_dir'], 'WAVECAR'), '.')
+
+            # if pert_step is NSC, copy CHGCAR from previous step
             if self['pert_step'] == 'NSC':
-                job_info_array = fw_spec['_job_info']
-                prev_job_info = job_info_array[-1]
                 shutil.copy(os.path.join(prev_job_info['launch_dir'], 'CHGCAR'), '.')
-                shutil.copy(os.path.join(prev_job_info['launch_dir'], 'WAVECAR'), '.')
                 self['calc_params']['icharg'] = 11
 
         # if magnetic calculation
@@ -225,39 +226,42 @@ class WriteChargesTask(FiretaskBase):
     required_params = ['filename', 'pert_value', 'dummy_atom']
 
     def run_task(self, fw_spec):
-        job_info_array = fw_spec['_job_info']
-        incar = Incar.from_file(os.path.join(job_info_array[-1]['launch_dir'], 'INCAR'))
-        outcar = Outcar(os.path.join(job_info_array[-1]['launch_dir'], 'OUTCAR'))
-
-        with open(os.path.join(job_info_array[-1]['launch_dir'], 'POSCAR'), 'rt') as f:
-            poscar_lines = f.readlines()
-        elem_list = poscar_lines[0].split()
-        num_ions = [int(item) for item in poscar_lines[5].split()]
-
-        dummy_index = 0
-        for elem, amount in zip(elem_list, num_ions):
-            if elem == self['dummy_atom']:
-                if amount == 1:
-                    break
-                else:
-                    raise ValueError('More than one dummy atom in the structure')
-            else:
-                dummy_index += amount
-
-        if 'f' in outcar.charge[dummy_index]:
-            charge = outcar.charge[dummy_index]['f']
-        else:
-            charge = outcar.charge[dummy_index]['d']
-
         write_output = True
-        initial_magmoms = incar['MAGMOM']
-        final_magmoms = [item['tot'] for item in outcar.magnetization]
-        for initial_magmom, final_magmom in zip(initial_magmoms, final_magmoms):
-            if initial_magmom != 0:
-                # if the magnetic moment changes too much, exclude this perturbation from output
-                if final_magmom / initial_magmom < 0.5 or final_magmom / initial_magmom > 2:
-                    write_output = False
+        job_info_array = fw_spec['_job_info']
+
+        # if the magnetic moment changes too much, do not write charges in output
+        for step in [1, 2]:
+            incar = Incar.from_file(os.path.join(job_info_array[step]['launch_dir'], 'INCAR'))
+            outcar = Outcar(os.path.join(job_info_array[step]['launch_dir'], 'OUTCAR'))
+
+            initial_magmoms = incar['MAGMOM']
+            final_magmoms = [item['tot'] for item in outcar.magnetization]
+            for initial_magmom, final_magmom in zip(initial_magmoms, final_magmoms):
+                if initial_magmom != 0:
+                    if final_magmom / initial_magmom < 0.5 or final_magmom / initial_magmom > 2:
+                        write_output = False
 
         if write_output:
+            # get dummy index
+            with open(os.path.join(job_info_array[-1]['launch_dir'], 'POSCAR'), 'rt') as f:
+                poscar_lines = f.readlines()
+            elem_list = poscar_lines[0].split()
+            num_ions = [int(item) for item in poscar_lines[5].split()]
+
+            dummy_index = 0
+            for elem, amount in zip(elem_list, num_ions):
+                if elem == self['dummy_atom']:
+                    if amount == 1:
+                        break
+                    else:
+                        raise ValueError('More than one dummy atom in the structure')
+                else:
+                    dummy_index += amount
+
+            if 'f' in outcar.charge[dummy_index]:
+                charge = outcar.charge[dummy_index]['f']
+            else:
+                charge = outcar.charge[dummy_index]['d']
+
             with open(os.path.join(os.environ.get('AUTOMAG_PATH'), 'CalcFold', self['filename']), 'a') as f:
                 f.write(f"{self['pert_value']:5.2f}  {charge}\n")
