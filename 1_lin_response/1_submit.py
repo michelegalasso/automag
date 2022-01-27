@@ -45,35 +45,11 @@ bare_params = {
     'ediff': 1e-6,
     'ismear': 0,
     'sigma': 0.05,
-    # 'nbands': 148,
-    # 'pstress': 1500,
     'kpts': 20,
     'lmaxmix': 4,
 }
 
 # submit calculations
-run = SubmitFirework(path_to_poscar, mode='perturbations', fix_params=bare_params, pert_values=[-0.08, -0.05],
+run = SubmitFirework(path_to_poscar, mode='perturbations', fix_params=bare_params, pert_values=perturbations,
                      magmoms=configuration, dummy_atom=dummy_atom, dummy_position=dummy_position)
 run.submit()
-
-# submit non-selfconsistent response
-# nsc_params = copy(bare_params)
-# nsc_params['ldau'] = True
-# nsc_params['ldautype'] = 3
-# nsc_params['ldaul'] = [2, -1, -1]
-# nsc_params['icharg'] = 11
-#
-# perturbations = [-0.08, -0.05, -0.02, 0.02, 0.05, 0.08]
-# if MODE == 'NSC':
-#     nsc_run = SubmitFirework(poscar_file, mode='perturbations', fix_params=nsc_params, magmoms=magmoms,
-#                              pert_values=perturbations, bare_dir=BARE_DIR)
-#     nsc_run.submit()
-#
-# # submit selfconsistent response
-# sc_params = copy(nsc_params)
-# del sc_params['icharg']
-#
-# if MODE == 'SC':
-#     nsc_run = SubmitFirework(poscar_file, mode='perturbations', fix_params=sc_params, magmoms=magmoms,
-#                              pert_values=perturbations)
-#     nsc_run.submit()
