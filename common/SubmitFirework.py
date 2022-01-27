@@ -15,7 +15,7 @@ from typing import Union
 from itertools import product
 from fireworks import LaunchPad, Firework, Workflow
 
-from common.utilities import atoms_to_encode, VaspCalculationTask, WriteOutputTask
+from common.utilities import atoms_to_encode, VaspCalculationTask, WriteOutputTask, WriteChargesTask
 
 
 # substitute with your launchpad file
@@ -168,6 +168,7 @@ class SubmitFirework(object):
         if self.mode == 'perturbations':
             next_id = 3
             nsc_fireworks = []
+            out_nsc_fireworks = []
             for perturbation in self.pert_values:
                 nsc_firetask = VaspCalculationTask(
                     calc_params=params,
@@ -189,23 +190,41 @@ class SubmitFirework(object):
                 nsc_fireworks.append(nsc_firework)
                 next_id += 1
 
-            fireworks.append(nsc_fireworks)
+                out_nsc_firetask = WriteChargesTask(
+                    filename='charges.txt',
+                    pert_value=perturbation,
+                    dummy_atom=self.dummy_atom,
+                    atom_ucalc=atom_ucalc,
+                    initial_magmoms=self.magmoms,
+                )
+                out_nsc_firework = Firework(
+                    [out_nsc_firetask],
+                    name='write_output',
+                    spec={'_queueadapter': {'ntasks': 1, 'walltime': '00:30:00'}},
+                    fw_id=next_id
+                )
 
-        # write output
-        output_firetask = WriteOutputTask(
-            system=name,
-            filename=f"{atoms.get_chemical_formula(mode='reduce')}_{self.mode}.txt",
-            initial_magmoms=self.magmoms,
-            read_enthalpy=False,
-            energy_convergence=self.energy_convergence
-        )
-        output_firework = Firework(
-            [output_firetask],
-            name='write_output',
-            spec={'_queueadapter': {'ntasks': 1, 'walltime': '00:30:00'}},
-            fw_id=2
-        )
-        fireworks.append([output_firework])
+                out_nsc_fireworks.append(out_nsc_firework)
+                next_id += 1
+
+            fireworks.append(nsc_fireworks)
+            fireworks.append(out_nsc_fireworks)
+        else:
+            # write output
+            output_firetask = WriteOutputTask(
+                system=name,
+                filename=f"{atoms.get_chemical_formula(mode='reduce')}_{self.mode}.txt",
+                initial_magmoms=self.magmoms,
+                read_enthalpy=False,
+                energy_convergence=self.energy_convergence
+            )
+            output_firework = Firework(
+                [output_firetask],
+                name='write_output',
+                spec={'_queueadapter': {'ntasks': 1, 'walltime': '00:30:00'}},
+                fw_id=2
+            )
+            fireworks.append([output_firework])
 
         # package the fireworks into a workflow and submit to the launchpad
         flat_fireworks = [fw for sublist in fireworks for fw in sublist]

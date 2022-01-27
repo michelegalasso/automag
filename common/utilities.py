@@ -19,6 +19,7 @@ from fireworks import FiretaskBase, explicit_serialize
 from pymatgen.core.structure import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.core.periodic_table import Element
+from pymatgen.io.vasp.outputs import Outcar
 
 
 def atoms_to_encode(atoms):
@@ -211,6 +212,37 @@ class WriteOutputTask(FiretaskBase):
                 magmoms_final = np.zeros(len(magmoms))
 
             output_line += 'final_magmoms={}\n'.format(np.array2string(magmoms_final, 10000))
+
+        with open(os.path.join(os.environ.get('AUTOMAG_PATH'), 'CalcFold', self['filename']), 'a') as f:
+            f.write(output_line)
+
+@explicit_serialize
+class WriteChargesTask(FiretaskBase):
+    """
+    Write charges for U calculation.
+    """
+    _fw_name = 'WriteChargesTask'
+    required_params = ['filename', 'pert_value', 'dummy_atom', 'atom_ucalc']
+    optional_params = ['initial_magmoms']
+
+    def run_task(self, fw_spec):
+        job_info_array = fw_spec['_job_info']
+
+        atom_ucalc = Element(self['atom_ucalc'])
+        atoms_final = read(os.path.join(job_info_array[-1]['launch_dir'], 'OUTCAR'))
+        ch_symbols = atoms_final.get_chemical_symbols()
+        outcar = Outcar(os.path.join(job_info_array[-1]['launch_dir'], 'OUTCAR'))
+        for i, ch_symbol in enumerate(ch_symbols):
+            if ch_symbol == self['dummy_atom']:
+                if atom_ucalc.is_transition_metal:
+                    output_line = f"{self['pert_value']:5.2f}  {outcar.charge[i]['d']}"
+                elif atom_ucalc.is_lanthanoid or atom_ucalc.is_actinoid:
+                    output_line = f"{self['pert_value']:5.2f}  {outcar.charge[i]['f']}"
+                else:
+                    raise ValueError(f"Cannot calculate U for the element {self['atom_ucalc']}")
+
+        if 'initial_magmoms' in self:
+            pass
 
         with open(os.path.join(os.environ.get('AUTOMAG_PATH'), 'CalcFold', self['filename']), 'a') as f:
             f.write(output_line)
