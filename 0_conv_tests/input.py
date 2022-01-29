@@ -12,7 +12,7 @@ params = {
     'prec': 'Normal',
     'ncore': 4,
     'ediff': 1e-6,
-    'ismear': 1,
+    'ismear': -5,       # 1 if structural relaxation will be performed
     'lcharg': False,
     'lwave': False,
     # 'sigma': 0.1,
