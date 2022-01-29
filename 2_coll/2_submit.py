@@ -7,7 +7,7 @@ Script which submits collinear single point energy calculations.
 .. codeauthor:: Michele Galasso <m.galasso@yandex.com>
 """
 
-from input import *
+from input import params
 
 import os
 import numpy as np

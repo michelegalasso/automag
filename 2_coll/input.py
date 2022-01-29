@@ -1,6 +1,9 @@
 # name of the poscar file to use in the automag/geometries folder
 poscar_file = 'Fe2O3-alpha.vasp'
 
+# maximum supercell size for generating distinct magnetic configurations
+supercell_size = 1
+
 # define the VASP parameters
 params = {
     'xc': 'PBE',
@@ -27,6 +30,3 @@ params = {
 
 # choose the atomic types to be considered magnetic (default transition metals)
 # magnetic_atoms = ['Fe', 'Co']
-
-# choose the magnetic configuration to use for U calculation (default FM-HS)
-# configuration = 6 * [4.0] + 6 * [-4.0] + 18 * [0.0]
