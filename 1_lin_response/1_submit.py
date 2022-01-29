@@ -1,6 +1,6 @@
 """
-automag.1_lin_response.submit
-=============================
+automag.1_lin_response.1_submit
+===============================
 
 Script which submits linear response U calculations.
 

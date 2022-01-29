@@ -1,6 +1,6 @@
 """
-automag.1_lin_response.plot_results
-===================================
+automag.1_lin_response.2_plot_results
+=====================================
 
 Script which plots results of linear response U calculation.
 
