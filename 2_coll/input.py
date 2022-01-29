@@ -1,15 +1,6 @@
 # name of the poscar file to use in the automag/geometries folder
 poscar_file = 'Fe2O3-alpha.vasp'
 
-# define the atom to introduce as dummy atom
-dummy_atom = 'Ni'
-
-# define the position of the dummy atom (from 0 to N_ATOMS-1)
-dummy_position = 0
-
-# define the perturbations in eV to apply to the dummy atom
-perturbations = [-0.08, -0.05, -0.02, 0.02, 0.05, 0.08]
-
 # define the VASP parameters
 params = {
     'xc': 'PBE',
@@ -17,12 +8,21 @@ params = {
     'prec': 'Accurate',
     'ncore': 4,
     'encut': 820,
-    'ediff': 1e-6,
-    'ismear': 0,
+    'ediff': 1e-6,  # it was 1e-8
+    'ismear': -5,
     'sigma': 0.05,
+    'nelm': 200,
     'kpts': 20,
     'lmaxmix': 4,
-    'nelm': 100,
+    'lcharg': False,
+    'lwave': False,
+    'isym': 0,
+    'ldau': True,
+    'ldautype': 2,
+    'ldaul': [2, -1],
+    'ldauu': [4, 0],
+    'ldauj': [0, 0],
+    'ldauprint': 2,
 }
 
 # choose the atomic types to be considered magnetic (default transition metals)

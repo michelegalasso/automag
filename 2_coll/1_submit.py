@@ -7,6 +7,8 @@ Script which submits collinear single point energy calculations.
 .. codeauthor:: Michele Galasso <m.galasso@yandex.com>
 """
 
+from input import *
+
 import os
 import numpy as np
 
@@ -22,36 +24,6 @@ AFM_INIT = 6 * [4.0] + 6 * [-4.0] + 18 * [0.0]
 
 # name of tmp file
 TMP_FILENAME = 'tmp.vasp'
-
-params = {
-    'xc': 'PBE',
-    'setups': 'recommended',
-    'prec': 'Accurate',
-    'ncore': 4,
-    'encut': 670,
-    'ediff': 1e-8,
-    # 'ediffg': -1e-3,
-    # 'ibrion': 2,
-    # 'isif': 3,
-    # 'nsw': 300,
-    # 'potim': 0.2,
-    'ismear': -5,
-    'sigma': 0.05,
-    'nelm': 200,
-    # 'nbands': 148,
-    # 'pstress': 1500,
-    'kpts': 30,
-    'lmaxmix': 4,
-    'lcharg': False,
-    'lwave': False,
-    'isym': 0,
-    'ldau': True,
-    'ldautype': 2,
-    'ldaul': [2, -1],
-    'ldauu': [4, 0],
-    'ldauj': [0, 0],
-    'ldauprint': 2,
-}
 
 filenames = []
 for filename in os.listdir('enumlib'):
@@ -73,11 +45,6 @@ for filename in filenames:
         f.write(poscar_string)
 
     if filename.split('.')[1] == '1':
-        # nm_init = np.zeros(len(COMPOSITION.num_atoms))      # NM configuration
-        # relax_run = SubmitFirework(TMP_FILENAME, mode='relax', fix_params=params, magmoms=nm_init,
-        #                            configuration='nm')
-        # relax_run.submit()
-
         # FM configuration
         singlepoint_run = SubmitFirework(TMP_FILENAME, mode='singlepoint', fix_params=params, magmoms=FM_INIT,
                                          configuration='fm')
