@@ -77,12 +77,12 @@ with open('struct_enum.in', 'w') as f:
     f.write('full list of labelings\n')
     f.write('# Concentration restrictions\n')
 
-### CONTINUE FROM HERE ###
-    if structure.composition[MAGNETIC_ATOM] % 2:
-        structure.composition *= 2
+    # if structure.composition[MAGNETIC_ATOM] % 2:
+    #     structure.composition *= 2
 
-    for atomtype, amount in structure.composition.to_data_dict['unit_cell_composition'].items():
-        if atomtype == MAGNETIC_ATOM:
+    for element, amount in zip(structure.composition.elements,
+                               structure.composition.to_data_dict['unit_cell_composition'].values()):
+        if element.is_magnetic:
             for _ in range(2):
                 f.write(f'{int(amount / 2):4d}')
                 f.write(f'{int(amount / 2):4d}')
@@ -98,4 +98,4 @@ try:
 except subprocess.TimeoutExpired:
     process.kill()
 
-os.system('/home/michele/softs/enumlib/aux_src/makeStr.py 1 200')
+os.system('/home/michele/softs/enumlib/aux_src/makeStr.py 1 500')
