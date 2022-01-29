@@ -1,5 +1,5 @@
 """
-automag.2_coll.1_submit
+automag.2_coll.2_submit
 =======================
 
 Script which submits collinear single point energy calculations.
