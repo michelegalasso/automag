@@ -247,7 +247,7 @@ class WriteChargesTask(FiretaskBase):
         # get charges
         charges = []
         for step in [1, 2]:
-            incar = Incar.from_file(os.path.join(job_info_array[step]['launch_dir'], 'INCAR'))
+            outcar_bare = Outcar(os.path.join(job_info_array[0]['launch_dir'], 'OUTCAR'))
             outcar = Outcar(os.path.join(job_info_array[step]['launch_dir'], 'OUTCAR'))
             with open(os.path.join(job_info_array[step]['launch_dir'], 'is_converged'), 'r') as f:
                 conv_info = f.readline()
@@ -257,7 +257,7 @@ class WriteChargesTask(FiretaskBase):
             else:
                 charges.append(outcar.charge[dummy_index]['d'])
 
-            initial_magmoms = incar['MAGMOM']
+            initial_magmoms = [item['tot'] for item in outcar_bare.magnetization]
             final_magmoms = [item['tot'] for item in outcar.magnetization]
             for initial_magmom, final_magmom in zip(initial_magmoms, final_magmoms):
                 if initial_magmom != 0:
