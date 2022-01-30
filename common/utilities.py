@@ -263,7 +263,7 @@ class WriteChargesTask(FiretaskBase):
             for initial_magmom, final_magmom in zip(initial_magmoms, final_magmoms):
                 if initial_magmom != 0:
                     # if the magnetic moment changes too much, do not write charges in output
-                    if final_magmom / initial_magmom < 0.9 or final_magmom / initial_magmom > 1.1 \
+                    if final_magmom / initial_magmom < 0.8 or final_magmom / initial_magmom > 1.2 \
                             or conv_info == 'NONCONVERGED':
                         write_output = False
 
