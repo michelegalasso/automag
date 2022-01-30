@@ -247,7 +247,9 @@ class WriteChargesTask(FiretaskBase):
 
         # get charges
         charges = []
+        incar_bare = Incar.from_file(os.path.join(job_info_array[0]['launch_dir'], 'INCAR'))
         outcar_bare = Outcar(os.path.join(job_info_array[0]['launch_dir'], 'OUTCAR'))
+        bare_magmoms = [item['tot'] for item, ref in zip(outcar_bare.magnetization, incar_bare['MAGMOM']) if ref != 0]
         for step in [1, 2]:
             outcar = Outcar(os.path.join(job_info_array[step]['launch_dir'], 'OUTCAR'))
             with open(os.path.join(job_info_array[step]['launch_dir'], 'is_converged'), 'r') as f:
@@ -258,12 +260,11 @@ class WriteChargesTask(FiretaskBase):
             else:
                 charges.append(outcar.charge[dummy_index]['d'])
 
-            initial_magmoms = [item['tot'] for item in outcar_bare.magnetization]
-            final_magmoms = [item['tot'] for item in outcar.magnetization]
-            for initial_magmom, final_magmom in zip(initial_magmoms, final_magmoms):
-                if initial_magmom != 0:
+            final_magmoms = [item['tot'] for item, ref in zip(outcar.magnetization, incar_bare['MAGMOM']) if ref != 0]
+            for bare_magmom, final_magmom in zip(bare_magmoms, final_magmoms):
+                if bare_magmom != 0:
                     # if the magnetic moment changes too much, do not write charges in output
-                    if final_magmom / initial_magmom < 0.8 or final_magmom / initial_magmom > 1.2 \
+                    if final_magmom / bare_magmom < 0.8 or final_magmom / bare_magmom > 1.2 \
                             or conv_info == 'NONCONVERGED':
                         write_output = False
 
