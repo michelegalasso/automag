@@ -107,12 +107,13 @@ class VaspCalculationTask(FiretaskBase):
             self['calc_params']['ldau'] = True
             self['calc_params']['ldautype'] = 3
 
-            # if pert_step is NSC, copy CHGCAR and WAVECAR from previous step
+            job_info_array = fw_spec['_job_info']
+            prev_job_info = job_info_array[-1]
+            shutil.copy(os.path.join(prev_job_info['launch_dir'], 'WAVECAR'), '.')
+
+            # if pert_step is NSC, copy CHGCAR from previous step
             if self['pert_step'] == 'NSC':
-                job_info_array = fw_spec['_job_info']
-                prev_job_info = job_info_array[-1]
                 shutil.copy(os.path.join(prev_job_info['launch_dir'], 'CHGCAR'), '.')
-                shutil.copy(os.path.join(prev_job_info['launch_dir'], 'WAVECAR'), '.')
                 self['calc_params']['icharg'] = 11
 
         # if magnetic calculation
