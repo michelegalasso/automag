@@ -247,8 +247,8 @@ class WriteChargesTask(FiretaskBase):
 
         # get charges
         charges = []
+        outcar_bare = Outcar(os.path.join(job_info_array[0]['launch_dir'], 'OUTCAR'))
         for step in [1, 2]:
-            outcar_bare = Outcar(os.path.join(job_info_array[0]['launch_dir'], 'OUTCAR'))
             outcar = Outcar(os.path.join(job_info_array[step]['launch_dir'], 'OUTCAR'))
             with open(os.path.join(job_info_array[step]['launch_dir'], 'is_converged'), 'r') as f:
                 conv_info = f.readline()
