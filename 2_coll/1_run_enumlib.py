@@ -84,8 +84,8 @@ with open('struct_enum.in', 'w') as f:
                 f.write(f'{len(wyckoff):4d}')
                 f.write(f'{symmetrized_structure.num_sites * 2:4d}\n')
         else:
-            f.write(f'{int(len(wyckoff) * 2):4d}')
-            f.write(f'{int(len(wyckoff) * 2):4d}')
+            f.write(f'{len(wyckoff) * 2:4d}')
+            f.write(f'{len(wyckoff) * 2:4d}')
             f.write(f'{symmetrized_structure.num_sites * 2:4d}\n')
 
 process = subprocess.Popen('/home/michele/softs/enumlib/src/enum.x')
