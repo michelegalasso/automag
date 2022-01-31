@@ -57,40 +57,36 @@ with open('struct_enum.in', 'w') as f:
     f.write(f'  {case} -nary case\n')
     f.write(f'    {structure.num_sites} # Number of points in the multilattice\n')
 
-    ### FOR NOW THIS WORKS ONLY FOR ONE MAGNETIC TYPE IN THE UNIT CELL ###
     offset = 0
-    for atom in structure:
-        for component in atom.coords:
-            f.write(f'{component:14.10f}        ')
-        if atom.specie.is_magnetic:
-            offset = 1
-            for i, element in enumerate(structure.composition.elements):
-                if atom.specie.name == element.name:
-                    f.write(f'{i}/{i + offset}\n')
-        else:
-            for i, element in enumerate(structure.composition.elements):
-                if atom.specie.name == element.name:
-                    f.write(f'{i + offset}\n')
+    analyzer = SpacegroupAnalyzer(structure)
+    symmetrized_structure = analyzer.get_symmetrized_structure()
+    for i, wyckoff in enumerate(symmetrized_structure.equivalent_sites):
+        if wyckoff[0].specie.is_magnetic:
+            offset += 1
+
+        for atom in wyckoff:
+            for component in atom.coords:
+                f.write(f'{component:14.10f}        ')
+            if atom.specie.is_magnetic:
+                f.write(f'{i + offset - 1}/{i + offset}\n')
+            else:
+                f.write(f'{i + offset}\n')
 
     f.write(f'    1 {supercell_size}   # Starting and ending cell sizes for search\n')
     f.write('0.10000000E-06 # Epsilon (finite precision parameter)\n')
     f.write('full list of labelings\n')
     f.write('# Concentration restrictions\n')
 
-    # if structure.composition[MAGNETIC_ATOM] % 2:
-    #     structure.composition *= 2
-
-    for element, amount in zip(structure.composition.elements,
-                               structure.composition.to_data_dict['unit_cell_composition'].values()):
-        if element.is_magnetic:
+    for wyckoff in symmetrized_structure.equivalent_sites:
+        if wyckoff[0].specie.is_magnetic:
             for _ in range(2):
-                f.write(f'{int(amount / 2):4d}')
-                f.write(f'{int(amount / 2):4d}')
-                f.write(f'{int(structure.composition.num_atoms):4d}\n')
+                f.write(f'{len(wyckoff):4d}')
+                f.write(f'{len(wyckoff):4d}')
+                f.write(f'{symmetrized_structure.num_sites * 2:4d}\n')
         else:
-            f.write(f'{int(amount):4d}')
-            f.write(f'{int(amount):4d}')
-            f.write(f'{int(structure.composition.num_atoms):4d}\n')
+            f.write(f'{int(len(wyckoff) * 2):4d}')
+            f.write(f'{int(len(wyckoff) * 2):4d}')
+            f.write(f'{symmetrized_structure.num_sites * 2:4d}\n')
 
 process = subprocess.Popen('/home/michele/softs/enumlib/src/enum.x')
 try:
