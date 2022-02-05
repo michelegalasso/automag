@@ -4,6 +4,9 @@ poscar_file = 'Ca6Mn2Co2O12.vasp'
 # maximum supercell size for generating distinct magnetic configurations
 supercell_size = 3
 
+# choose the absolute value given to up and down spins
+spin_value = 4
+
 # define the VASP parameters
 params = {
     'xc': 'PBE',
