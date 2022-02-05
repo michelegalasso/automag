@@ -116,7 +116,8 @@ def launch_enumlib(count, split):
             if flag:
                 configuration = np.repeat(conf, conf_poscar.natoms)
                 transformed_configuration = configuration[mapping]
-                if [-item for item in transformed_configuration] not in configurations[index]:
+                if transformed_configuration.tolist() not in configurations[index] and \
+                        [-item for item in transformed_configuration] not in configurations[index]:
                     configurations[index].append(transformed_configuration.tolist())
 
     os.chdir('..')
