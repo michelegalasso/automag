@@ -67,13 +67,13 @@ def launch_enumlib(count, split):
                 f.write(f'{len(wyckoff) * 2:4d}')
                 f.write(f'{symmetrized_structure.num_sites * 2:4d}\n')
 
-    process = subprocess.Popen('/home/michele/softs/enumlib/src/enum.x')
+    process = subprocess.Popen('enum.x')
     try:
         process.wait(timeout=60)
     except subprocess.TimeoutExpired:
         process.kill()
 
-    os.system('/home/michele/softs/enumlib/aux_src/makeStr.py 1 500')
+    os.system('makeStr.py 1 500')
 
     for j in range(501):
         if os.path.isfile(f'vasp.{j + 1}'):
