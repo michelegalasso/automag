@@ -1,8 +1,8 @@
 """
-automag.2_coll.1_run_enumlib
-============================
+automag.2_coll.1_submit
+=======================
 
-Script which runs enumlib.
+Script which runs enumlib and submits calculations.
 
 .. codeauthor:: Michele Galasso <m.galasso@yandex.com>
 """

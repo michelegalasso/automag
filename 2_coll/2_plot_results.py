@@ -1,5 +1,5 @@
 """
-automag.2_coll.3_plot_results
+automag.2_coll.2_plot_results
 =============================
 
 Script which plots results of magnetic relaxations.
