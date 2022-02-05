@@ -26,7 +26,7 @@ class SubmitFirework(object):
     def __init__(self, poscar_file: str, mode: str, fix_params: dict, magmoms: list,
                  encut_values: Union[list, range] = None, sigma_values: Union[list, range] = None,
                  kpts_values: Union[list, range] = None, pert_values: Union[list, range] = None,
-                 configuration: str = None, dummy_atom: str = None, dummy_position: int = None):
+                 setting: int = None, dummy_atom: str = None, dummy_position: int = None):
         if mode == 'encut':
             assert encut_values is not None
             assert sigma_values is None
@@ -71,7 +71,7 @@ class SubmitFirework(object):
         self.mode = mode
         self.fix_params = fix_params
         self.poscar_file = poscar_file
-        self.configuration = configuration
+        self.setting = setting
         self.pert_values = pert_values
         self.dummy_atom = dummy_atom
         self.dummy_position = dummy_position
@@ -96,22 +96,21 @@ class SubmitFirework(object):
 
                 self.add_wflow(params, name)
         else:
-            if self.configuration is not None:
-                self.add_wflow(params, self.configuration)
+            if self.setting is not None:
+                self.add_wflow(params, f'setting{self.setting}')
             else:
                 self.add_wflow(params, self.mode)
 
     def add_wflow(self, params, name):
         # create an atoms object and encode it
+        atoms = read(self.poscar_file)
         if self.mode == 'perturbations':
-            atoms = read(self.poscar_file)
             ch_symbols = atoms.get_chemical_symbols()
             atom_ucalc = ch_symbols[self.dummy_position]
             ch_symbols[self.dummy_position] = self.dummy_atom
             atoms.set_chemical_symbols(ch_symbols)
             encode = atoms_to_encode(atoms)
         else:
-            atoms = read(self.poscar_file)
             encode = atoms_to_encode(atoms)
 
         # here we will collect all fireworks of our workflow

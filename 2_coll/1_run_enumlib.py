@@ -14,8 +14,12 @@ import subprocess
 import numpy as np
 
 from itertools import product
+from pymatgen.io.vasp import Poscar
 from pymatgen.core.structure import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+
+from common.SubmitFirework import SubmitFirework
+
 
 def launch_enumlib(count, split):
     os.mkdir(f'enumlib{count}')
@@ -70,6 +74,51 @@ def launch_enumlib(count, split):
         process.kill()
 
     os.system('/home/michele/softs/enumlib/aux_src/makeStr.py 1 500')
+
+    for j in range(501):
+        if os.path.isfile(f'vasp.{j + 1}'):
+            conf_poscar = Poscar.from_file(f'vasp.{j + 1}')
+        else:
+            break
+
+        if conf_poscar.structure.lattice in lattices:
+            index = lattices.index(conf_poscar.structure.lattice)
+            current_coords = conf_poscar.structure.frac_coords.tolist()
+            reference_coords = coordinates[index].tolist()
+            mapping = [current_coords.index(coord) for coord in reference_coords]
+        else:
+            lattices.append(conf_poscar.structure.lattice)
+            coordinates.append(conf_poscar.structure.frac_coords)
+            configurations.append([])
+            index = len(lattices) - 1
+            mapping = list(range(len(conf_poscar.structure.frac_coords)))
+
+        k = 0
+        groups = []
+        site_magmoms = []
+        for s, states in zip(split, wyckoff_magmoms):
+            if s:
+                groups.append([k, k + 1])
+                for _ in range(2):
+                    site_magmoms.append([spin_value, -spin_value])
+                    k += 1
+            else:
+                site_magmoms.append(states)
+                k += 1
+
+        # use a flag to check that all sites which have been split are AFM
+        for conf in product(*site_magmoms):
+            flag = True
+            conf_array = np.array(conf)
+            for group in groups:
+                if sum(conf_array[group]) != 0:
+                    flag = False
+            if flag:
+                configuration = np.repeat(conf, conf_poscar.natoms)
+                transformed_configuration = configuration[mapping]
+                if [-item for item in transformed_configuration] not in configurations[index]:
+                    configurations[index].append(transformed_configuration.tolist())
+
     os.chdir('..')
 
 
@@ -98,10 +147,9 @@ if os.path.exists('trials'):
 os.mkdir('trials')
 os.chdir('trials')
 
-# geometrical settings
-settings = [structure]
-
-# there will be a list of configurations for each setting
+# geometrical settings and respective lists of magnetic configurations
+lattices = [structure.lattice]
+coordinates = [structure.frac_coords]
 configurations = [[]]
 
 # get the multiplicities of each Wyckoff position
@@ -129,3 +177,20 @@ for split in product(*possibilities):
 
 for i, split in enumerate(splits):
     launch_enumlib(i + 1, split)
+
+# write output and submit calculations
+original_ch_symbols = [atom.name for atom in structure.species]
+for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, configurations)):
+    magnification = len(frac_coords) // len(structure.frac_coords)
+    ch_symbols = np.repeat(original_ch_symbols, magnification)
+    setting = Structure(lattice, ch_symbols, frac_coords)
+    setting.to(fmt='poscar', filename=f'setting{i + 1:03d}.vasp')
+
+    for conf in confs:
+        with open(f'configurations{i + 1:03d}.txt', 'a') as f:
+            f.write(' '.join(f'{e:2d}' for e in conf))
+            f.write('\n')
+
+        run = SubmitFirework(f'setting{i + 1:03d}.vasp', mode='singlepoint', fix_params=params, magmoms=conf,
+                             setting=i + 1)
+        run.submit()
