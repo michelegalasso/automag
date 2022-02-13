@@ -15,7 +15,7 @@ params = {
     'ncore': 4,
     'encut': 820,
     'ediff': 1e-6,
-    'ismear': -5,
+    'ismear': 1,
     'sigma': 0.05,
     'nelm': 200,
     'kpts': 20,
