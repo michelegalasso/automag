@@ -18,7 +18,7 @@ params = {
     'ismear': 1,
     'sigma': 0.05,
     'nelm': 200,
-    'kpts': 20,
+    'kpts': 30,
     'lmaxmix': 4,
     'lcharg': False,
     'lwave': False,
