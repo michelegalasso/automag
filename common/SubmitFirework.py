@@ -232,7 +232,7 @@ class SubmitFirework(object):
             # write output
             output_firetask = WriteOutputTask(
                 system=name,
-                filename=f"{atoms.get_chemical_formula(mode='hill', empirical=True)}_{self.mode}.txt",
+                filename=f"{atoms.get_chemical_formula(mode='metal', empirical=True)}_{self.mode}.txt",
                 initial_magmoms=self.magmoms,
                 read_enthalpy=False,
                 energy_convergence=self.energy_convergence,

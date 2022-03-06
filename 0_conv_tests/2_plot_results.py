@@ -64,7 +64,7 @@ plt.figure(figsize=(16, 9))
 # read only lines which do not start with space
 lines = []
 calcfold = os.path.join(os.environ.get('AUTOMAG_PATH'), 'CalcFold')
-with open(os.path.join(calcfold, f"{atoms.get_chemical_formula(mode='reduce')}_{mode}.txt"), 'r') as f:
+with open(os.path.join(calcfold, f"{atoms.get_chemical_formula(mode='metal')}_{mode}.txt"), 'r') as f:
     for line in f:
         if line[0] != ' ':
             lines.append(line)
