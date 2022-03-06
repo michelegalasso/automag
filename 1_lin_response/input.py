@@ -2,7 +2,7 @@
 poscar_file = 'Fe2O3-alpha.vasp'
 
 # define the atom to introduce as dummy atom
-dummy_atom = 'Ni'
+dummy_atom = 'Zn'
 
 # define the position of the dummy atom (from 0 to N_ATOMS-1)
 dummy_position = 0
