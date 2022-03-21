@@ -2,7 +2,7 @@
 mode = 'encut'
 
 # name of the poscar file to use in the automag/geometries folder
-poscar_file = 'Ni3TeO6.vasp'
+poscar_file = 'Fe2O3-alpha_primitive.vasp'
 
 # define the VASP parameters
 params = {
