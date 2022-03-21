@@ -1,8 +1,8 @@
 # choose the desired mode: 'encut' or 'kgrid'
-mode = 'kgrid'
+mode = 'encut'
 
 # name of the poscar file to use in the automag/geometries folder
-poscar_file = 'Fe-bcc.vasp'
+poscar_file = 'Ni3TeO6.vasp'
 
 # define the VASP parameters
 params = {
@@ -15,9 +15,9 @@ params = {
     'ismear': 1,
     'lcharg': False,
     'lwave': False,
-    # 'sigma': 0.1,
-    # 'kpts': 30,
-    'encut': 460,
+    'sigma': 0.1,
+    'kpts': 30,
+    # 'encut': 830,
 }
 
 # choose the atomic types to be considered magnetic (default transition metals)

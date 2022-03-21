@@ -22,7 +22,7 @@ params = {
     'sigma': 0.05,
     'kpts': 20,
     'lmaxmix': 4,
-    'nelm': 100,
+    'nelm': 200,
 }
 
 # choose the atomic types to be considered magnetic (default transition metals)
