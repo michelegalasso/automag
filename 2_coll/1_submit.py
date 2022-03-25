@@ -67,12 +67,14 @@ def launch_enumlib(count, split):
                 f.write(f'{len(wyckoff) * 2:4d}')
                 f.write(f'{symmetrized_structure.num_sites * 2:4d}\n')
 
+    # process = subprocess.Popen('/home/michele/softs/enumlib/src/enum.x')
     process = subprocess.Popen('enum.x')
     try:
         process.wait(timeout=60)
     except subprocess.TimeoutExpired:
         process.kill()
 
+    # os.system('/home/michele/softs/enumlib/aux_src/makeStr.py 1 500')
     os.system('makeStr.py 1 500')
 
     for j in range(501):
@@ -178,6 +180,13 @@ for split in product(*possibilities):
 
 for i, split in enumerate(splits):
     launch_enumlib(i + 1, split)
+
+# merge the first and second settings if they are equal
+if len(coordinates) > 1 and len(coordinates[0]) == len(coordinates[1]):
+    del lattices[0]
+    del coordinates[0]
+    configurations[0].extend(configurations[1])
+    del configurations[1]
 
 # write output and submit calculations
 original_ch_symbols = [atom.name for atom in structure.species]
