@@ -98,7 +98,7 @@ bar_labels = ['fm', 'nm']
 if len(energies) > 2:
     count = 1
     for _ in energies[2:]:
-        bar_labels.append(str(count))
+        bar_labels.append(f'afm{count}')
         count += 1
 
 # label bars
@@ -106,8 +106,13 @@ ax = plt.gca()
 rects = ax.patches
 rects.sort(key=lambda x: x.get_x())
 for bar_label, rect in zip(bar_labels, rects):
+    if bar_label.startswith('afm'):
+        label = bar_label.strip('afm')
+    else:
+        label = bar_label
+
     height = rect.get_height()
-    ax.text(rect.get_x() + rect.get_width() / 2, height - 0.1 * max(energies), bar_label,
+    ax.text(rect.get_x() + rect.get_width() / 2, height - 0.1 * max(energies), label,
             fontsize='xx-small', ha='center', va='bottom')
 
 # label axes
