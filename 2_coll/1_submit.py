@@ -189,16 +189,27 @@ if len(coordinates) > 1 and len(coordinates[0]) == len(coordinates[1]):
     del configurations[1]
 
 # write output and submit calculations
+count = 1
+first_two_states = ['fm', 'nm']
 original_ch_symbols = [atom.name for atom in structure.species]
 for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, configurations)):
     magnification = len(frac_coords) // len(structure.frac_coords)
     ch_symbols = np.repeat(original_ch_symbols, magnification)
     setting = Structure(lattice, ch_symbols, frac_coords)
     setting.to(fmt='poscar', filename=f'setting{i + 1:03d}.vasp')
+    mask = [item.is_magnetic for item in setting.species]
 
     for conf in confs:
+        conf_array = np.array(conf)
         with open(f'configurations{i + 1:03d}.txt', 'a') as f:
-            f.write(' '.join(f'{e:2d}' for e in conf))
+            try:
+                state = first_two_states.pop(0)
+                f.write(f'{state:>3s}  ')
+            except IndexError:
+                f.write(f'{count:3d}  ')
+                count += 1
+
+            f.write(' '.join(f'{e:2d}' for e in conf_array[mask]))
             f.write('\n')
 
         run = SubmitFirework(f'setting{i + 1:03d}.vasp', mode='singlepoint', fix_params=params, magmoms=conf,

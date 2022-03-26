@@ -35,8 +35,8 @@ n_magatoms = []
 while os.path.isfile(f'trials/configurations{count + 1:03d}.txt'):
     with open(f'trials/configurations{count + 1:03d}.txt', 'rt') as f:
         line = f.readline()
-        spins = [int(item) for item in line.split()]
-    n_magatoms.append(np.count_nonzero(spins))
+        spins = [int(item) for item in line.split()[1:]]
+    n_magatoms.append(len(spins))
     count += 1
 
 # read lines
