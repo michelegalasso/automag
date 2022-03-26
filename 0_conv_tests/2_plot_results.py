@@ -18,7 +18,7 @@ from ase.io import read
 # increase matplotlib pyplot font size
 plt.rcParams.update({'font.size': 18})
 
-# create a pymatgen Structure object
+# create an ase atoms object
 path_to_poscar = '../geometries/' + poscar_file
 atoms = read(path_to_poscar)
 
