@@ -1,6 +1,3 @@
-# name of the poscar file to use in the automag/geometries folder
-poscar_file = 'Fe2O3-alpha_primitive.vasp'
-
 # choose the cutoff radius in Angstrom for neighbor search
 cutoff_radius = 3.8
 
