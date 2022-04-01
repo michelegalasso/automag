@@ -63,7 +63,7 @@ with open(output_file, 'rt') as f:
 for line, maginfo in zip(lines, maginfos):
     values = line.split()
     init_state = values[0]
-    data[init_state]['energy'] = float(values[-1].split('=')[1]) / len(data[init_state]['init_spins']) * 1000
+    data[init_state]['energy'] = float(values[-1].split('=')[1]) / len(data[init_state]['init_spins'])
 
     if values[2].split('=')[1] == 'NONCONVERGED':
         print(f'WARNING: energy calculation of firework {values[1]} did not converge.')
@@ -117,6 +117,9 @@ shutil.copy(f'trials/setting{final_setting:03d}.vasp', '.')
 bar_labels = [key for key in data.keys()]
 energies = np.array([value['energy'] for value in data.values()])
 kept_magmoms = np.array([value['kept_magmoms'] for value in data.values()])
+
+# energies from eV/magnetic atom to meV/magnetic atom
+energies *= 1000
 
 # normalize energies for plot
 energies -= min(energies)
