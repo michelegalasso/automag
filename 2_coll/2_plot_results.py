@@ -48,7 +48,7 @@ with open(data, 'rt') as f:
         else:
             maginfos.append(line)
 
-    # extract the results
+# extract the results
 fw_IDs, energies, kept_magmoms = [], [], []
 for line, maginfo in zip(lines, maginfos):
     values = line.split()
