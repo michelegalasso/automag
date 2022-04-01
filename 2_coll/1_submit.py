@@ -189,7 +189,8 @@ if len(coordinates) > 1 and len(coordinates[0]) == len(coordinates[1]):
     del configurations[1]
 
 # write output and submit calculations
-count = 1
+afm_count = 1
+fim_count = 1
 first_two_states = ['fm', 'nm']
 original_ch_symbols = [atom.name for atom in structure.species]
 for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, configurations)):
@@ -204,14 +205,18 @@ for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, con
         with open(f'configurations{i + 1:03d}.txt', 'a') as f:
             try:
                 state = first_two_states.pop(0)
-                f.write(f'{state:>3s}  ')
             except IndexError:
-                f.write(f'{count:3d}  ')
-                count += 1
+                if np.sum(conf) == 0:
+                    state = 'afm' + str(afm_count)
+                    afm_count += 1
+                else:
+                    state = 'fim' + str(fim_count)
+                    fim_count += 1
 
+            f.write(f'{state:>6s}  ')
             f.write(' '.join(f'{e:2d}' for e in conf_array[mask]))
             f.write('\n')
 
         run = SubmitFirework(f'setting{i + 1:03d}.vasp', mode='singlepoint', fix_params=params, magmoms=conf,
-                             setting=i + 1)
+                             name=state)
         run.submit()

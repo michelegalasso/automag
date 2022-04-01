@@ -27,7 +27,7 @@ class SubmitFirework(object):
     def __init__(self, poscar_file: str, mode: str, fix_params: dict, magmoms: list,
                  encut_values: Union[list, range] = None, sigma_values: Union[list, range] = None,
                  kpts_values: Union[list, range] = None, pert_values: Union[list, range] = None,
-                 setting: int = None, dummy_atom: str = None, dummy_position: int = None):
+                 name: str = None, dummy_atom: str = None, dummy_position: int = None):
         if mode == 'encut':
             assert encut_values is not None
             assert sigma_values is None
@@ -72,7 +72,7 @@ class SubmitFirework(object):
         self.mode = mode
         self.fix_params = fix_params
         self.poscar_file = poscar_file
-        self.setting = setting
+        self.name = name
         self.pert_values = pert_values
         self.dummy_atom = dummy_atom
         self.dummy_position = dummy_position
@@ -97,8 +97,8 @@ class SubmitFirework(object):
 
                 self.add_wflow(params, name)
         else:
-            if self.setting is not None:
-                self.add_wflow(params, f'setting{self.setting}')
+            if self.name is not None:
+                self.add_wflow(params, f'{self.name}')
             else:
                 self.add_wflow(params, self.mode)
 
