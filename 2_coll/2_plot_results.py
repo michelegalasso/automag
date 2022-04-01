@@ -10,9 +10,12 @@ Script which plots results of magnetic relaxations.
 from input import poscar_file
 
 import os
+import json
+import shutil
 import numpy as np
 import matplotlib.pyplot as plt
 
+from copy import copy
 from ase.io import read
 
 
@@ -28,20 +31,28 @@ atoms = read(path_to_poscar)
 
 # path to results file with data
 calcfold = '../CalcFold'
-data = os.path.join(calcfold, f"{atoms.get_chemical_formula(mode='metal', empirical=True)}_singlepoint.txt")
+output_file = os.path.join(calcfold, f"{atoms.get_chemical_formula(mode='metal', empirical=True)}_singlepoint.txt")
 
-count = 0
-n_magatoms = []
-while os.path.isfile(f'trials/configurations{count + 1:03d}.txt'):
-    with open(f'trials/configurations{count + 1:03d}.txt', 'rt') as f:
-        line = f.readline()
-        spins = [int(item) for item in line.split()[1:]]
-    n_magatoms.append(len(spins))
-    count += 1
+data = {}
+setting = 1
+while os.path.isfile(f'trials/configurations{setting:03d}.txt'):
+    with open(f'trials/configurations{setting:03d}.txt', 'rt') as f:
+        for line in f:
+            values = line.split()
+            init_state = values[0]
+            dct = {
+                'setting': setting,
+                'init_spins': [int(item) for item in values[1:]],
+            }
+            data[init_state] = dct
+    setting += 1
+
+# keep the maximum value of setting
+max_setting = copy(setting)
 
 # read lines
 lines, maginfos = [], []
-with open(data, 'rt') as f:
+with open(output_file, 'rt') as f:
     for line in f:
         if line[0] != ' ':
             lines.append(line)
@@ -49,12 +60,10 @@ with open(data, 'rt') as f:
             maginfos.append(line)
 
 # extract the results
-fw_IDs, energies, kept_magmoms = [], [], []
 for line, maginfo in zip(lines, maginfos):
     values = line.split()
-    n_setting = int(values[0].strip('setting'))
-    fw_IDs.append(int(values[1]))
-    energies.append(float(values[-1].split('=')[1]) / n_magatoms[n_setting - 1] * 1000)
+    init_state = values[0]
+    data[init_state]['energy'] = float(values[-1].split('=')[1]) / len(data[init_state]['init_spins']) * 1000
 
     if values[2].split('=')[1] == 'NONCONVERGED':
         print(f'WARNING: energy calculation of firework {values[1]} did not converge.')
@@ -72,17 +81,42 @@ for line, maginfo in zip(lines, maginfos):
             final[i] = np.ceil(item)
 
     if np.array_equal(np.sign(initial), np.sign(final)) or np.array_equal(np.sign(initial), -np.sign(final)):
-        kept_magmoms.append(True)
+        data[init_state]['kept_magmoms'] = True
     else:
-        kept_magmoms.append(False)
+        data[init_state]['kept_magmoms'] = False
 
-energies = np.array(energies)
-kept_magmoms = np.array(kept_magmoms)
+setting = 1
+final_states = []
+final_setting = setting
+final_energies = []
+while setting < max_setting:
+    current_states = []
+    current_energies = []
+    for init_state, value in data.items():
+        if init_state != 'nm' and value['setting'] == setting and value['kept_magmoms']:
+            current_states.append(np.sign(value['init_spins']).tolist())
+            current_energies.append(value['energy'])
+    if len(current_states) > len(final_states):
+        final_setting = setting
+        final_states = current_states
+        final_energies = current_energies
+    setting += 1
 
-# sort configurations
-indices = np.argsort(fw_IDs)
-energies = energies[indices]
-kept_magmoms = kept_magmoms[indices]
+# write states to file
+with open(f'states{final_setting:03d}.txt', 'wt') as f:
+    json.dump(final_states, f)
+
+# write energies to file
+with open(f'energies{final_setting:03d}.txt', 'wt') as f:
+    json.dump(final_energies, f)
+
+# copy setting file with geometry
+shutil.copy(f'trials/setting{final_setting:03d}.vasp', '.')
+
+# extract values for plot
+bar_labels = [key for key in data.keys()]
+energies = np.array([value['energy'] for value in data.values()])
+kept_magmoms = np.array([value['kept_magmoms'] for value in data.values()])
 
 # normalize energies for plot
 energies -= min(energies)
@@ -93,22 +127,14 @@ repr_configurations = np.array(range(-1, len(energies) - 1))
 plt.bar(repr_configurations[~kept_magmoms], energies[~kept_magmoms], bottom=-0.1 * max(energies), color='r')
 plt.bar(repr_configurations[kept_magmoms], energies[kept_magmoms], bottom=-0.1 * max(energies), color='b')
 
-# get labels for bars
-bar_labels = ['fm', 'nm']
-if len(energies) > 2:
-    count = 1
-    for _ in energies[2:]:
-        bar_labels.append(str(count))
-        count += 1
-
 # label bars
 ax = plt.gca()
 rects = ax.patches
 rects.sort(key=lambda x: x.get_x())
 for bar_label, rect in zip(bar_labels, rects):
     height = rect.get_height()
-    ax.text(rect.get_x() + rect.get_width() / 2, height - 0.1 * max(energies), bar_label,
-            fontsize='xx-small', ha='center', va='bottom')
+    ax.text(rect.get_x() + rect.get_width() / 2, height - 0.09 * max(energies), bar_label,
+            fontsize='xx-small', ha='center', va='bottom', rotation='vertical')
 
 # label axes
 plt.xlabel('configurations')
