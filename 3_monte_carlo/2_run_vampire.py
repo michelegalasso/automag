@@ -14,6 +14,7 @@ import os
 from pymatgen.core.structure import Structure
 
 # read geometry from previous step
+structure = None
 for item in os.listdir('../2_coll'):
     rel_path = os.path.join('../2_coll', item)
     if os.path.isfile(rel_path):
