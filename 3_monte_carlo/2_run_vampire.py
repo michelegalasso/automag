@@ -10,19 +10,35 @@ Script which runs Vampire for Monte Carlo simulation.
 from input import *
 
 import os
+import numpy as np
 
 from pymatgen.core.structure import Structure
 
-# read geometry from previous step
-structure = None
-for item in os.listdir('../2_coll'):
-    rel_path = os.path.join('../2_coll', item)
-    if os.path.isfile(rel_path):
-        if item.startswith('setting') and item.endswith('.vasp'):
-            structure = Structure.from_file(rel_path)
+# raise IOError if no trials folder
+if not os.path.isdir('../2_coll/trials'):
+    raise IOError('No trials folder found in ../2_coll.')
 
-if structure is None:
-    raise IOError('No setting file found in ../2_coll folder.')
+setting = 1
+magmom = None
+while os.path.isfile(f'../2_coll/trials/configurations{setting:03d}.txt'):
+    with open(f'../2_coll/trials/configurations{setting:03d}.txt', 'rt') as f:
+        for line in f:
+            values = line.split()
+            if values[0] == configuration:
+                magmom = [int(item) for item in values[1:]]
+                break
+        if magmom is not None:
+            break
+    setting += 1
+
+if magmom is None:
+    raise IOError(f'configuration {configuration} not found.')
+
+# get materials from magmom
+materials = [0 if item >= 0 else 1 for item in magmom]
+
+# create a pymatgen Structure object
+structure = Structure.from_file(f'../2_coll/trials/setting{setting:03d}.vasp')
 
 # find out which atoms are magnetic
 for element in structure.composition.elements:
@@ -54,15 +70,14 @@ with open('vamp.ucf', 'w') as f:
 
     # print fractional coordinates for VAMPIRE input
     f.write('# Atoms num_atoms num_materials; id cx cy cz mat cat hcat\n')
-    f.write(f'{len(structure):d} {num_materials}\n')
-    for i, coord in enumerate(structure.frac_coords):
+    f.write(f'{len(structure):d} {len(np.unique(materials))}\n')
+    for i, (coord, material) in enumerate(zip(structure.frac_coords, materials)):
         coord += 0.     # gets rid of the minus zero values
         for j, item in enumerate(coord):
             if item < 0:
                 coord[j] += 1
             elif item >= 1:
                 coord[j] -= 1
-        material = i // (len(structure) // num_materials)
         f.write(f'{i:2d}   {coord[0]:18.16f}  {coord[1]:18.16f}  {coord[2]:18.16f}  {material} 0 0\n')
 
     f.write('# Interactions n exctype; id i j dx dy dz Jij\n')

@@ -1,11 +1,11 @@
+# choose the configuration to use for Monte Carlo simulation
+configuration = 'afm1'
+
 # choose the cutoff radius in Angstrom for neighbor search
 cutoff_radius = 3.8
 
 # choose the size of the control group
 control_group_size = 0.4
-
-# set 1 for Curie temperature, 2 for Néel temperature
-num_materials = 2
 
 # choose the atomic types to be considered magnetic (default transition metals)
 # magnetic_atoms = ['Mn']
