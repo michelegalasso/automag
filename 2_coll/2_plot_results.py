@@ -30,7 +30,7 @@ path_to_poscar = '../geometries/' + poscar_file
 atoms = read(path_to_poscar)
 
 # path to results file with data
-calcfold = '../CalcFold'
+calcfold = os.path.join(os.environ.get('AUTOMAG_PATH'), 'CalcFold')
 output_file = os.path.join(calcfold, f"{atoms.get_chemical_formula(mode='metal', empirical=True)}_singlepoint.txt")
 
 data = {}

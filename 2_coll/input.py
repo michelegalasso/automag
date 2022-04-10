@@ -1,8 +1,8 @@
 # name of the poscar file to use in the automag/geometries folder
-poscar_file = 'Fe2O3-alpha_primitive.vasp'
+poscar_file = 'Fe-bcc.vasp'
 
 # maximum supercell size for generating distinct magnetic configurations
-supercell_size = 2
+supercell_size = 4
 
 # choose the absolute value given to up and down spins
 spin_value = 4
@@ -13,22 +13,22 @@ params = {
     'setups': 'recommended',
     'prec': 'Accurate',
     'ncore': 4,
-    'encut': 820,
+    'encut': 470,
     'ediff': 1e-6,
     'ismear': 1,
     'sigma': 0.05,
     'nelm': 200,
-    'kpts': 20,
-    'lmaxmix': 4,
+    'kpts': 30,
+    # 'lmaxmix': 4,
     'lcharg': False,
     'lwave': False,
     'isym': 0,
-    'ldau': True,
-    'ldautype': 2,
-    'ldaul': [2, -1],
-    'ldauu': [3.75, 0],
-    'ldauj': [0, 0],
-    'ldauprint': 2,
+    # 'ldau': True,
+    # 'ldautype': 2,
+    # 'ldaul': [2, -1],
+    # 'ldauu': [3.75, 0],
+    # 'ldauj': [0, 0],
+    # 'ldauprint': 2,
 }
 
 # choose the atomic types to be considered magnetic (default transition metals)
