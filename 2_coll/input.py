@@ -1,8 +1,8 @@
 # name of the poscar file to use in the automag/geometries folder
-poscar_file = 'Fe-bcc.vasp'
+poscar_file = 'Fe-bcc_2x2x2.vasp'
 
 # maximum supercell size for generating distinct magnetic configurations
-supercell_size = 4
+supercell_size = 1
 
 # choose the absolute value given to up and down spins
 spin_value = 4
