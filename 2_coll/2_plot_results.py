@@ -33,6 +33,10 @@ atoms = read(path_to_poscar)
 calcfold = os.path.join(os.environ.get('AUTOMAG_PATH'), 'CalcFold')
 output_file = os.path.join(calcfold, f"{atoms.get_chemical_formula(mode='metal', empirical=True)}_singlepoint.txt")
 
+# exit if no trials folder
+if not os.path.isdir('trials'):
+    raise IOError('No trials folder found.')
+
 data = {}
 setting = 1
 while os.path.isfile(f'trials/configurations{setting:03d}.txt'):
