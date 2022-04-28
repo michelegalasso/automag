@@ -70,7 +70,7 @@ for line, maginfo in zip(lines, maginfos):
     data[init_state]['energy'] = float(values[-1].split('=')[1]) / len(data[init_state]['init_spins'])
 
     if values[2].split('=')[1] == 'NONCONVERGED':
-        print(f'WARNING: energy calculation of {values[0]} did not converge and will be excluded from Tc calculation.')
+        print(f'WARNING: energy calculation of {values[0]} did not converge and will be excluded from the graph.')
         del data[init_state]
     else:
         initial, final = maginfo.split('final_magmoms=')
@@ -89,7 +89,7 @@ for line, maginfo in zip(lines, maginfos):
             data[init_state]['kept_magmoms'] = True
         else:
             data[init_state]['kept_magmoms'] = False
-            print(f'WARNING: {values[0]} did not keep the original magmoms and will be excluded from Tc calculation.')
+            print(f'WARNING: {values[0]} did not keep the original magmoms and will be marked in red on the graph.')
 
         data[init_state]['energy'] = float(values[-1].split('=')[1]) / len(data[init_state]['init_spins'])
 
