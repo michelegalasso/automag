@@ -2,7 +2,7 @@
 mode = 'encut'
 
 # name of the poscar file to use in the automag/geometries folder
-poscar_file = 'Co_conventional.vasp'
+poscar_file = 'Fe-bcc_2x2x2.vasp'
 
 # define the VASP parameters
 params = {

@@ -1,11 +1,11 @@
 # name of the poscar file to use in the automag/geometries folder
-poscar_file = 'Co_conventional.vasp'
+poscar_file = 'Fe-bcc_2x2x2.vasp'
 
 # maximum supercell size for generating distinct magnetic configurations
-supercell_size = 2
+supercell_size = 1
 
 # choose the absolute value given to up and down spins
-spin_value = 2
+spin_value = 4
 
 # define the VASP parameters
 params = {
@@ -16,9 +16,9 @@ params = {
     'encut': 470,
     'ediff': 1e-6,
     'ismear': 1,
-    'sigma': 0.1,
+    'sigma': 0.05,
     'nelm': 200,
-    'kpts': 40,
+    'kpts': 50,
     # 'lmaxmix': 4,
     'lcharg': False,
     'lwave': False,

@@ -70,24 +70,28 @@ for line, maginfo in zip(lines, maginfos):
     data[init_state]['energy'] = float(values[-1].split('=')[1]) / len(data[init_state]['init_spins'])
 
     if values[2].split('=')[1] == 'NONCONVERGED':
-        print(f'WARNING: energy calculation of firework {values[1]} did not converge.')
-
-    initial, final = maginfo.split('final_magmoms=')
-    initial = initial[initial.index('[') + 1:initial.index(']')]
-    final = final[final.index('[') + 1:final.index(']')]
-    initial = np.array(initial.split(), dtype=float)
-    final = np.array(final.split(), dtype=float)
-
-    for i, item in enumerate(final):
-        if item > 0:
-            final[i] = np.floor(item)
-        else:
-            final[i] = np.ceil(item)
-
-    if np.array_equal(np.sign(initial), np.sign(final)) or np.array_equal(np.sign(initial), -np.sign(final)):
-        data[init_state]['kept_magmoms'] = True
+        print(f'WARNING: energy calculation of {values[0]} did not converge and will be excluded from Tc calculation.')
+        del data[init_state]
     else:
-        data[init_state]['kept_magmoms'] = False
+        initial, final = maginfo.split('final_magmoms=')
+        initial = initial[initial.index('[') + 1:initial.index(']')]
+        final = final[final.index('[') + 1:final.index(']')]
+        initial = np.array(initial.split(), dtype=float)
+        final = np.array(final.split(), dtype=float)
+
+        for i, item in enumerate(final):
+            if item > 0:
+                final[i] = np.floor(item)
+            else:
+                final[i] = np.ceil(item)
+
+        if np.array_equal(np.sign(initial), np.sign(final)) or np.array_equal(np.sign(initial), -np.sign(final)):
+            data[init_state]['kept_magmoms'] = True
+        else:
+            data[init_state]['kept_magmoms'] = False
+            print(f'WARNING: {values[0]} did not keep the original magmoms and will be excluded from Tc calculation.')
+
+        data[init_state]['energy'] = float(values[-1].split('=')[1]) / len(data[init_state]['init_spins'])
 
 setting = 1
 final_states = []
