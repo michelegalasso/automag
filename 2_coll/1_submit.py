@@ -191,7 +191,6 @@ if len(coordinates) > 1 and len(coordinates[0]) == len(coordinates[1]):
 # write output and submit calculations
 afm_count = 1
 fim_count = 1
-first_two_states = ['fm', 'nm']
 original_ch_symbols = [atom.name for atom in structure.species]
 for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, configurations)):
     magnification = len(frac_coords) // len(structure.frac_coords)
@@ -203,15 +202,16 @@ for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, con
     for conf in confs:
         conf_array = np.array(conf)
         with open(f'configurations{i + 1:03d}.txt', 'a') as f:
-            try:
-                state = first_two_states.pop(0)
-            except IndexError:
-                if np.sum(conf) == 0:
-                    state = 'afm' + str(afm_count)
-                    afm_count += 1
-                else:
-                    state = 'fim' + str(fim_count)
-                    fim_count += 1
+            if np.sum(conf) == spin_value * np.sum(mask):
+                state = 'fm'
+            elif np.sum(np.abs(conf)) == 0:
+                state = 'nm'
+            elif np.sum(conf) == 0:
+                state = 'afm' + str(afm_count)
+                afm_count += 1
+            else:
+                state = 'fim' + str(fim_count)
+                fim_count += 1
 
             f.write(f'{state:>6s}  ')
             f.write(' '.join(f'{e:2d}' for e in conf_array[mask]))
