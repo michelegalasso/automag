@@ -37,6 +37,16 @@ output_file = os.path.join(calcfold, f"{atoms.get_chemical_formula(mode='metal',
 if not os.path.isdir('trials'):
     raise IOError('No trials folder found.')
 
+# read lines
+lines, maginfos, presents = [], [], []
+with open(output_file, 'rt') as f:
+    for line in f:
+        if line[0] != ' ':
+            presents.append(line.split()[0])
+            lines.append(line)
+        else:
+            maginfos.append(line)
+
 data = {}
 setting = 1
 while os.path.isfile(f'trials/configurations{setting:03d}.txt'):
@@ -44,24 +54,16 @@ while os.path.isfile(f'trials/configurations{setting:03d}.txt'):
         for line in f:
             values = line.split()
             init_state = values[0]
-            dct = {
-                'setting': setting,
-                'init_spins': [int(item) for item in values[1:]],
-            }
-            data[init_state] = dct
+            if init_state in presents:
+                dct = {
+                    'setting': setting,
+                    'init_spins': [int(item) for item in values[1:]],
+                }
+                data[init_state] = dct
     setting += 1
 
 # keep the maximum value of setting
 max_setting = copy(setting)
-
-# read lines
-lines, maginfos = [], []
-with open(output_file, 'rt') as f:
-    for line in f:
-        if line[0] != ' ':
-            lines.append(line)
-        else:
-            maginfos.append(line)
 
 # extract the results
 for line, maginfo in zip(lines, maginfos):
