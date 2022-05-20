@@ -7,7 +7,7 @@ Script which plots results of magnetic relaxations.
 .. codeauthor:: Michele Galasso <m.galasso@yandex.com>
 """
 
-from input import poscar_file
+from input import *
 
 import os
 import json
@@ -18,6 +18,9 @@ import matplotlib.pyplot as plt
 from copy import copy
 from ase.io import read
 
+# take care of the case when hs_cutoff has not been specified
+if 'hs_cutoff' not in globals():
+    hs_cutoff = 0
 
 # increase matplotlib pyplot font size
 plt.rcParams.update({'font.size': 16})
@@ -66,6 +69,7 @@ while os.path.isfile(f'trials/configurations{setting:03d}.txt'):
 max_setting = copy(setting)
 
 # extract the results
+all_final_magmoms = []
 for line, maginfo in zip(lines, maginfos):
     values = line.split()
     init_state = values[0]
@@ -81,19 +85,30 @@ for line, maginfo in zip(lines, maginfos):
         initial = np.array(initial.split(), dtype=float)
         final = np.array(final.split(), dtype=float)
 
+        all_final_magmoms.extend(final.tolist())
+
+        # exclude low-spin configurations
+        flag = False
+        if np.all(np.abs(final) > hs_cutoff) or values[0] == 'nm':
+            flag = True
+
         for i, item in enumerate(final):
             if item > 0:
                 final[i] = np.floor(item)
             else:
                 final[i] = np.ceil(item)
 
-        if np.array_equal(np.sign(initial), np.sign(final)) or np.array_equal(np.sign(initial), -np.sign(final)):
+        if (np.array_equal(np.sign(initial), np.sign(final)) or np.array_equal(np.sign(initial), -np.sign(final))) and \
+                flag:
             data[init_state]['kept_magmoms'] = True
         else:
             data[init_state]['kept_magmoms'] = False
             print(f'WARNING: {values[0]} did not keep the original magmoms and will be marked in red on the graph.')
 
         data[init_state]['energy'] = float(values[-1].split('=')[1]) / len(data[init_state]['init_spins'])
+
+# plt.hist(np.abs(all_final_magmoms), bins=40)
+# plt.savefig('spin_distribution.png')
 
 setting = 1
 final_states = []
