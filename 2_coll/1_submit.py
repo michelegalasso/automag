@@ -183,7 +183,7 @@ for i, split in enumerate(splits):
     launch_enumlib(i + 1, split)
 
 # merge the first and second settings if they are equal
-if len(coordinates) > 1 and len(coordinates[0]) == len(coordinates[1]):
+if len(coordinates) > 1 and len(coordinates[0]) == len(coordinates[1]) and len(configurations[0]) == 1:
     del lattices[0]
     del coordinates[0]
     configurations[0].extend(configurations[1])
