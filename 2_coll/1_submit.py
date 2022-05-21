@@ -119,7 +119,8 @@ def launch_enumlib(count, split):
                 configuration = np.repeat(conf, conf_poscar.natoms)
                 transformed_configuration = configuration[mapping]
                 if transformed_configuration.tolist() not in configurations[index] and \
-                        [-item for item in transformed_configuration] not in configurations[index]:
+                        [-item for item in transformed_configuration] not in configurations[index] and \
+                        sum(abs(transformed_configuration)) != 0:
                     configurations[index].append(transformed_configuration.tolist())
 
     os.chdir('..')
@@ -168,7 +169,7 @@ for i, wyckoff in enumerate(symmetrized_structure.equivalent_sites):
 # get all possible configurations without any splitting
 for conf in product(*wyckoff_magmoms):
     configuration = np.repeat(conf, multiplicities)
-    if [-item for item in configuration] not in configurations[0]:
+    if [-item for item in configuration] not in configurations[0] and sum(abs(configuration)) != 0:
         configurations[0].append(configuration.tolist())
 
 # split all possible combinations of Wyckoff positions
