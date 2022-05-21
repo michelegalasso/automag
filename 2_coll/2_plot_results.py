@@ -89,7 +89,8 @@ for line, maginfo in zip(lines, maginfos):
 
         # exclude low-spin configurations
         flag = False
-        if np.all(np.abs(final) > hs_cutoff) or values[0] == 'nm':
+        mask = np.nonzero(initial)
+        if np.all(np.abs(final[mask]) > hs_cutoff) or values[0] == 'nm':
             flag = True
 
         for i, item in enumerate(final):
@@ -151,7 +152,7 @@ energies -= min(energies)
 energies += 0.1 * max(energies)
 
 # plot results
-repr_configurations = np.array(range(-1, len(energies) - 1))
+repr_configurations = np.array(range(len(energies)))
 plt.bar(repr_configurations[~kept_magmoms], energies[~kept_magmoms], bottom=-0.1 * max(energies), color='r')
 plt.bar(repr_configurations[kept_magmoms], energies[kept_magmoms], bottom=-0.1 * max(energies), color='b')
 
