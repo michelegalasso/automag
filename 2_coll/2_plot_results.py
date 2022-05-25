@@ -23,7 +23,7 @@ if 'hs_cutoff' not in globals():
     hs_cutoff = 0
 
 # increase matplotlib pyplot font size
-plt.rcParams.update({'font.size': 16})
+plt.rcParams.update({'font.size': 20})
 
 # set figure size
 plt.figure(figsize=(16, 9))
@@ -73,7 +73,6 @@ all_final_magmoms = []
 for line, maginfo in zip(lines, maginfos):
     values = line.split()
     init_state = values[0]
-    data[init_state]['energy'] = float(values[-1].split('=')[1]) / len(data[init_state]['init_spins'])
 
     if values[2].split('=')[1] == 'NONCONVERGED':
         print(f'WARNING: energy calculation of {values[0]} did not converge and will be excluded from the graph.')
@@ -106,7 +105,7 @@ for line, maginfo in zip(lines, maginfos):
             data[init_state]['kept_magmoms'] = False
             print(f'WARNING: {values[0]} did not keep the original magmoms and will be marked in red on the graph.')
 
-        data[init_state]['energy'] = float(values[-1].split('=')[1]) / len(data[init_state]['init_spins'])
+        data[init_state]['energy'] = float(values[-1].split('=')[1]) / len(atoms)
 
 # plt.hist(np.abs(all_final_magmoms), bins=40)
 # plt.savefig('spin_distribution.png')
@@ -140,15 +139,23 @@ with open(f'energies{final_setting:03d}.txt', 'wt') as f:
 shutil.copy(f'trials/setting{final_setting:03d}.vasp', '.')
 
 # extract values for plot
-bar_labels = [key for key in data.keys()]
-energies = np.array([value['energy'] for value in data.values()])
-kept_magmoms = np.array([value['kept_magmoms'] for value in data.values()])
+bar_labels = []
+energies = []
+kept_magmoms = []
+for key, value in sorted(data.items(), key=lambda t: t[0] if t[0] != 'fm' else 'aaa'):
+    bar_labels.append(key)
+    energies.append(value['energy'])
+    kept_magmoms.append(value['kept_magmoms'])
+
+energies = np.array(energies)
+kept_magmoms = np.array(kept_magmoms)
 
 # energies from eV/magnetic atom to meV/magnetic atom
 energies *= 1000
 
 # normalize energies for plot
 energies -= min(energies)
+toplim = max(energies) * 1.12
 energies += 0.1 * max(energies)
 
 # plot results
@@ -163,14 +170,16 @@ rects.sort(key=lambda x: x.get_x())
 for bar_label, rect in zip(bar_labels, rects):
     height = rect.get_height()
     ax.text(rect.get_x() + rect.get_width() / 2, height - 0.09 * max(energies), bar_label,
-            fontsize='xx-small', ha='center', va='bottom', rotation='vertical')
+            fontsize='small', ha='center', va='bottom', rotation='vertical')
 
 # label axes
 plt.xlabel('configurations')
-plt.ylabel(f'free energy TOTEN (meV/magnetic atom)')
+plt.ylabel(f'free energy TOTEN (meV/atom)')
+plt.xticks(np.arange(len(rects)))
+plt.ylim(top=toplim)
 
 # save or show bar chart
-plt.savefig('stability.png')
+plt.savefig('stability.png', bbox_inches='tight')
 # plt.show()
 
 print(f'The most stable configuration is {bar_labels[np.argmin(energies)]}.')
