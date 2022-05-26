@@ -174,7 +174,7 @@ for bar_label, rect in zip(bar_labels, rects):
 
 # label axes
 plt.xlabel('configurations')
-plt.ylabel(f'free energy TOTEN (meV/atom)')
+plt.ylabel(f'relative energy (meV/atom)')
 plt.xticks(np.arange(len(rects)))
 plt.ylim(top=toplim)
 
