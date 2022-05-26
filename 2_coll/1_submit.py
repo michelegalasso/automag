@@ -108,6 +108,13 @@ def launch_enumlib(count, split):
                 site_magmoms.append(states)
                 k += 1
 
+        # adapt equivalent_multipliers in case of supercells
+        coefficient = len(conf_poscar.structure) // len(structure)
+
+        current_multipliers = []
+        for multiplier in equivalent_multipliers:
+            current_multipliers.append(np.repeat(multiplier, coefficient))
+
         # use a flag to check that all sites which have been split are AFM
         for conf in product(*site_magmoms):
             flag = True
@@ -118,9 +125,13 @@ def launch_enumlib(count, split):
             if flag:
                 configuration = np.repeat(conf, conf_poscar.natoms)
                 transformed_configuration = configuration[mapping]
-                if transformed_configuration.tolist() not in configurations[index] and \
-                        [-item for item in transformed_configuration] not in configurations[index] and \
-                        sum(abs(transformed_configuration)) != 0:
+
+                add_flag = True
+                for multiplier in current_multipliers:
+                    if np.multiply(transformed_configuration, multiplier).tolist() in configurations[index]:
+                        add_flag = False
+
+                if add_flag and sum(abs(transformed_configuration)) != 0:
                     configurations[index].append(transformed_configuration.tolist())
 
     os.chdir('..')
@@ -160,16 +171,42 @@ configurations = [[]]
 multiplicities = [len(item) for item in symmetrized_structure.equivalent_indices]
 
 wyckoff_magmoms = []
-for i, wyckoff in enumerate(symmetrized_structure.equivalent_sites):
+equivalent_multipliers = []
+for multiplicity, wyckoff in zip(multiplicities, symmetrized_structure.equivalent_sites):
     if wyckoff[0].specie.is_magnetic:
         wyckoff_magmoms.append([spin_value, 0, -spin_value])
+        if len(equivalent_multipliers) == 0:
+            equivalent_multipliers.append(np.repeat(1, multiplicity))
+            equivalent_multipliers.append(np.repeat(-1, multiplicity))
+        else:
+            new_equivalent_multipliers = []
+            for multiplier in equivalent_multipliers:
+                new_equivalent_multipliers.append(np.append(multiplier, np.repeat(1, multiplicity)))
+                new_equivalent_multipliers.append(np.append(multiplier, np.repeat(-1, multiplicity)))
+
+            equivalent_multipliers = new_equivalent_multipliers
     else:
         wyckoff_magmoms.append([0])
+
+        if len(equivalent_multipliers) == 0:
+            equivalent_multipliers.append(np.repeat(1, multiplicity))
+        else:
+            new_equivalent_multipliers = []
+            for multiplier in equivalent_multipliers:
+                new_equivalent_multipliers.append(np.append(multiplier, np.repeat(1, multiplicity)))
+
+            equivalent_multipliers = new_equivalent_multipliers
 
 # get all possible configurations without any splitting
 for conf in product(*wyckoff_magmoms):
     configuration = np.repeat(conf, multiplicities)
-    if [-item for item in configuration] not in configurations[0] and sum(abs(configuration)) != 0:
+
+    add_flag = True
+    for multiplier in equivalent_multipliers:
+        if np.multiply(configuration, multiplier).tolist() in configurations[0]:
+            add_flag = False
+
+    if add_flag and sum(abs(configuration)) != 0:
         configurations[0].append(configuration.tolist())
 
 # split all possible combinations of Wyckoff positions
