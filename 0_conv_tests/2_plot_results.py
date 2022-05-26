@@ -88,7 +88,7 @@ elif mode == 'kgrid':
 
     sigmas = np.array(sigmas)
     kptss = np.array(kptss)
-    energies = np.array(energies) / 1000
+    energies = np.array(energies)
     sigma_values = sorted(set(sigmas))
     for sigma_value in sigma_values:
         indices = np.where(sigmas == sigma_value)
@@ -102,6 +102,6 @@ else:
     plt.xlabel(r'$R_k$')
     plt.legend()
 
-plt.ylabel('energy (meV/atom)')
+plt.ylabel('energy (eV/atom)')
 plt.savefig(f'{mode}.png')
 # plt.show()
