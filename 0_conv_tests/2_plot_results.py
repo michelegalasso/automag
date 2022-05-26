@@ -102,6 +102,6 @@ else:
     plt.xlabel(r'$R_k$')
     plt.legend()
 
-plt.ylabel('free energy TOTEN (eV/atom)')
+plt.ylabel('energy (eV/atom)')
 plt.savefig(f'{mode}.png')
 # plt.show()
