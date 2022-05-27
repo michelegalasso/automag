@@ -102,7 +102,7 @@ def launch_enumlib(count, split):
             if s:
                 groups.append([k, k + 1])
                 for _ in range(2):
-                    site_magmoms.append([spin_value, -spin_value])
+                    site_magmoms.append([1, -1])
                     k += 1
             else:
                 site_magmoms.append(states)
@@ -126,13 +126,29 @@ def launch_enumlib(count, split):
                 configuration = np.repeat(conf, conf_poscar.natoms)
                 transformed_configuration = configuration[mapping]
 
-                add_flag = True
-                for multiplier in current_multipliers:
-                    if np.multiply(transformed_configuration, multiplier).tolist() in configurations[index]:
-                        add_flag = False
+                if 'low_spin_value' in globals():
+                    for mult in current_multipliers:
+                        tmp = np.where(mult == 1, high_spin_value, mult)
+                        spin_mask = np.where(tmp == -1, low_spin_value, tmp)
+                        candidate_conf = np.multiply(configuration, spin_mask)
 
-                if add_flag and sum(abs(transformed_configuration)) != 0:
-                    configurations[index].append(transformed_configuration.tolist())
+                        add_flag = True
+                        for multiplier in current_multipliers:
+                            if np.multiply(candidate_conf, multiplier).tolist() in configurations[index]:
+                                add_flag = False
+
+                        if add_flag and sum(abs(candidate_conf)) != 0:
+                            configurations[index].append(candidate_conf.tolist())
+                else:
+                    candidate_conf = high_spin_value * transformed_configuration
+
+                    add_flag = True
+                    for multiplier in current_multipliers:
+                        if np.multiply(candidate_conf, multiplier).tolist() in configurations[index]:
+                            add_flag = False
+
+                    if add_flag and sum(abs(candidate_conf)) != 0:
+                        configurations[index].append(candidate_conf.tolist())
 
     os.chdir('..')
 
@@ -174,7 +190,7 @@ wyckoff_magmoms = []
 equivalent_multipliers = []
 for multiplicity, wyckoff in zip(multiplicities, symmetrized_structure.equivalent_sites):
     if wyckoff[0].specie.is_magnetic:
-        wyckoff_magmoms.append([spin_value, 0, -spin_value])
+        wyckoff_magmoms.append([1, 0, -1])
         if len(equivalent_multipliers) == 0:
             equivalent_multipliers.append(np.repeat(1, multiplicity))
             equivalent_multipliers.append(np.repeat(-1, multiplicity))
@@ -189,11 +205,11 @@ for multiplicity, wyckoff in zip(multiplicities, symmetrized_structure.equivalen
         wyckoff_magmoms.append([0])
 
         if len(equivalent_multipliers) == 0:
-            equivalent_multipliers.append(np.repeat(1, multiplicity))
+            equivalent_multipliers.append(np.repeat(0, multiplicity))
         else:
             new_equivalent_multipliers = []
             for multiplier in equivalent_multipliers:
-                new_equivalent_multipliers.append(np.append(multiplier, np.repeat(1, multiplicity)))
+                new_equivalent_multipliers.append(np.append(multiplier, np.repeat(0, multiplicity)))
 
             equivalent_multipliers = new_equivalent_multipliers
 
@@ -201,13 +217,29 @@ for multiplicity, wyckoff in zip(multiplicities, symmetrized_structure.equivalen
 for conf in product(*wyckoff_magmoms):
     configuration = np.repeat(conf, multiplicities)
 
-    add_flag = True
-    for multiplier in equivalent_multipliers:
-        if np.multiply(configuration, multiplier).tolist() in configurations[0]:
-            add_flag = False
+    if 'low_spin_value' in globals():
+        for mult in equivalent_multipliers:
+            tmp = np.where(mult == 1, high_spin_value, mult)
+            spin_mask = np.where(tmp == -1, low_spin_value, tmp)
+            candidate_conf = np.multiply(configuration, spin_mask)
 
-    if add_flag and sum(abs(configuration)) != 0:
-        configurations[0].append(configuration.tolist())
+            add_flag = True
+            for multiplier in equivalent_multipliers:
+                if np.multiply(candidate_conf, multiplier).tolist() in configurations[0]:
+                    add_flag = False
+
+            if add_flag and sum(abs(candidate_conf)) != 0:
+                configurations[0].append(candidate_conf.tolist())
+    else:
+        candidate_conf = high_spin_value * configuration
+
+        add_flag = True
+        for multiplier in equivalent_multipliers:
+            if np.multiply(candidate_conf, multiplier).tolist() in configurations[0]:
+                add_flag = False
+
+        if add_flag and sum(abs(candidate_conf)) != 0:
+            configurations[0].append(candidate_conf.tolist())
 
 # split all possible combinations of Wyckoff positions
 splits = []
@@ -219,14 +251,27 @@ for split in product(*possibilities):
 for i, split in enumerate(splits):
     launch_enumlib(i + 1, split)
 
-# merge the first and second settings if they are equal
-if len(coordinates) > 1 and len(coordinates[0]) == len(coordinates[1]) and len(configurations[0]) == 1:
-    del lattices[0]
-    del coordinates[0]
-    configurations[0].extend(configurations[1])
-    del configurations[1]
+# merge the first and second settings if they are equivalent
+if len(lattices) > 1:
+    transformation_matrix = np.dot(lattices[1].matrix, np.linalg.inv(lattices[0].matrix))
+    inv_transformation_matrix = np.linalg.inv(transformation_matrix)
+    determinant = int(round(np.linalg.det(transformation_matrix), 6))
+
+    if determinant == 1:
+        del_flag = True
+        origin_shift = np.around(coordinates[1][0] - np.dot(coordinates[0][0], inv_transformation_matrix), decimals=6)
+        for coord1, coord2 in zip(coordinates[0], coordinates[1]):
+            if not np.allclose((np.dot(coord1, inv_transformation_matrix) + origin_shift) % 1, coord2):
+                del_flag = False
+
+        if del_flag:
+            del lattices[0]
+            del coordinates[0]
+            configurations[0].extend(configurations[1])
+            del configurations[1]
 
 # write output and submit calculations
+fm_count = 1
 afm_count = 1
 fim_count = 1
 original_ch_symbols = [atom.name for atom in structure.species]
@@ -240,8 +285,9 @@ for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, con
     for conf in confs:
         conf_array = np.array(conf)
         with open(f'configurations{i + 1:03d}.txt', 'a') as f:
-            if np.sum(conf) == spin_value * np.sum(mask):
-                state = 'fm'
+            if min(conf) >= 0:
+                state = 'fm' + str(fm_count)
+                fm_count += 1
             elif np.sum(np.abs(conf)) == 0:
                 state = 'nm'
             elif np.sum(conf) == 0:

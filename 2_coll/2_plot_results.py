@@ -18,9 +18,9 @@ import matplotlib.pyplot as plt
 from copy import copy
 from ase.io import read
 
-# take care of the case when hs_cutoff has not been specified
-if 'hs_cutoff' not in globals():
-    hs_cutoff = 0
+# take care of the case when lower_cutoff has not been specified
+if 'lower_cutoff' not in globals():
+    lower_cutoff = 0
 
 # increase matplotlib pyplot font size
 plt.rcParams.update({'font.size': 20})
@@ -89,7 +89,7 @@ for line, maginfo in zip(lines, maginfos):
         # exclude low-spin configurations
         flag = False
         mask = np.nonzero(initial)
-        if np.all(np.abs(final[mask]) > hs_cutoff) or values[0] == 'nm':
+        if np.all(np.abs(final[mask]) > lower_cutoff) or values[0] == 'nm':
             flag = True
 
         for i, item in enumerate(final):

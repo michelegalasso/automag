@@ -5,7 +5,10 @@ poscar_file = 'Ca3MnCoO6_primitive.vasp'
 supercell_size = 1
 
 # choose the absolute value given to up and down spins
-spin_value = 4
+high_spin_value = 4
+
+# if included all Wyckoff positions could be either HS or LS
+low_spin_value = 1
 
 # define the VASP parameters
 params = {
@@ -34,5 +37,5 @@ params = {
 # choose the atomic types to be considered magnetic (default transition metals)
 # magnetic_atoms = ['Mn']
 
-# specify a cutoff for considering only high-spin configurations
-# hs_cutoff = 1.7
+# specify a cutoff for picking only high-spin configurations from output
+# lower_cutoff = 1.7
