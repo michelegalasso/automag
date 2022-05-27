@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from ase.io import read
 
 # increase matplotlib pyplot font size
-plt.rcParams.update({'font.size': 18})
+plt.rcParams.update({'font.size': 20})
 
 # create an ase atoms object
 path_to_poscar = '../geometries/' + poscar_file
@@ -103,5 +103,5 @@ else:
     plt.legend()
 
 plt.ylabel('energy (eV/atom)')
-plt.savefig(f'{mode}.png')
+plt.savefig(f'{mode}.png', bbox_inches='tight')
 # plt.show()
