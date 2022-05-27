@@ -44,7 +44,7 @@ if mode == 'encut':
 # convergence test w.r.t. sigma and kpts
 if mode == 'kgrid':
     if 'sigma_values' not in globals():
-        sigma_values = [0.05, 0.1, 0.2]
+        sigma_values = [item / 100 for item in range(5, 25, 5)]
 
     if 'kpts_values' not in globals():
         kpts_values = range(20, 110, 10)

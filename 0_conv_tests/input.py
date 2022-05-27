@@ -2,7 +2,7 @@
 mode = 'encut'
 
 # name of the poscar file to use in the automag/geometries folder
-poscar_file = 'Fe-bcc_2x2x2.vasp'
+poscar_file = 'Fe2O3-alpha_primitive.vasp'
 
 # define the VASP parameters
 params = {
@@ -27,10 +27,10 @@ params = {
 # configuration = 6 * [4.0] + 6 * [-4.0] + 18 * [0.0]
 
 # choose the trial values for ENCUT (default from 500 to 1000 eV at steps of 10 eV)
-encut_values = range(350, 610, 10)
+# encut_values = range(350, 610, 10)
 
-# choose the trial values for SIGMA (default 0.05, 0.1 and 0.2 eV)
-# sigma_values = [0.05, 0.1, 0.2]
+# choose the trial values for SIGMA (default from 0.05 to 0.2 eV at steps of 0.05 eV)
+# sigma_values = [item / 100 for item in range(5, 25, 5)]
 
 # choose the trial values for R_k (default from 20 to 100 Ang^-1 at steps of 10 Ang^-1)
 # kpts_values = range(20, 110, 10)
