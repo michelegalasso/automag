@@ -142,7 +142,7 @@ shutil.copy(f'trials/setting{final_setting:03d}.vasp', '.')
 bar_labels = []
 energies = []
 kept_magmoms = []
-for key, value in sorted(data.items(), key=lambda t: t[0] if t[0] != 'fm' else 'aaa'):
+for key, value in sorted(data.items(), key=lambda t: t[0] if t[0][:2] != 'fm' else 'aaa' + t[0][2:]):
     bar_labels.append(key)
     energies.append(value['energy'])
     kept_magmoms.append(value['kept_magmoms'])
