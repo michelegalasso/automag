@@ -159,7 +159,7 @@ toplim = max(energies) * 1.12
 energies += 0.1 * max(energies)
 
 # plot results
-repr_configurations = np.array(range(len(energies)))
+repr_configurations = np.arange(1, len(energies) + 1)
 plt.bar(repr_configurations[~kept_magmoms], energies[~kept_magmoms], bottom=-0.1 * max(energies), color='r')
 plt.bar(repr_configurations[kept_magmoms], energies[kept_magmoms], bottom=-0.1 * max(energies), color='b')
 
@@ -175,7 +175,7 @@ for bar_label, rect in zip(bar_labels, rects):
 # label axes
 plt.xlabel('configurations')
 plt.ylabel(f'relative energy (meV/atom)')
-plt.xticks(np.arange(len(rects)))
+plt.xticks(np.arange(1, len(rects) + 1))
 plt.ylim(top=toplim)
 
 # save or show bar chart
