@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 
 from copy import copy
 from ase.io import read
+from pymatgen.core.structure import Structure
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 # take care of the case when lower_cutoff has not been specified
 if 'lower_cutoff' not in globals():
@@ -31,6 +33,12 @@ plt.figure(figsize=(16, 9))
 # create an ase atoms object
 path_to_poscar = '../geometries/' + poscar_file
 atoms = read(path_to_poscar)
+
+# get the multiplicities of each Wyckoff position
+structure = Structure.from_file(path_to_poscar)
+analyzer = SpacegroupAnalyzer(structure)
+symmetrized_structure = analyzer.get_symmetrized_structure()
+multiplicities = np.array([len(item) for item in symmetrized_structure.equivalent_indices])
 
 # path to results file with data
 calcfold = os.path.join(os.environ.get('AUTOMAG_PATH'), 'CalcFold')
@@ -92,14 +100,25 @@ for line, maginfo in zip(lines, maginfos):
         if np.all(np.abs(final[mask]) > lower_cutoff) or values[0] == 'nm':
             flag = True
 
-        for i, item in enumerate(final):
-            if item > 0:
-                final[i] = np.floor(item)
-            else:
-                final[i] = np.ceil(item)
+        magnification = len(initial) // sum(multiplicities)
+        current_multiplicities = magnification * multiplicities
 
-        if (np.array_equal(np.sign(initial), np.sign(final)) or np.array_equal(np.sign(initial), -np.sign(final))) and \
-                flag:
+        start = 0
+        kept = True
+        for multiplicity in multiplicities:
+            w_initial = initial[start:start + multiplicity]
+            w_final = final[start:start + multiplicity]
+            start += multiplicity
+
+            if not np.any(w_initial):
+                if np.any(np.around(w_final)):
+                    kept = False
+            else:
+                prod = np.multiply(np.sign(w_initial), w_final)
+                if prod.max() - prod.min() > 0.1:
+                    kept = False
+
+        if kept and flag:
             data[init_state]['kept_magmoms'] = True
         else:
             data[init_state]['kept_magmoms'] = False
