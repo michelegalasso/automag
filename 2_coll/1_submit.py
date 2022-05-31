@@ -74,6 +74,29 @@ def launch_enumlib(count, split):
     except subprocess.TimeoutExpired:
         process.kill()
 
+    # solve a bug of enumlib which produces an extra new line
+    with open('struct_enum.out', 'rt') as file:
+        lines = file.readlines()
+
+    line_number = 0
+    os.remove('struct_enum.out')
+    with open('struct_enum.out', 'wt') as file:
+        while line_number < len(lines):
+            line = lines[line_number]
+            if '(Non)Equivalency list' not in line:
+                file.write(line)
+                line_number += 1
+            else:
+                file.write(line.strip('\n'))
+
+                offset = 0
+                while not lines[line_number + offset + 1].startswith('start'):
+                    file.write(' ' + lines[line_number + offset + 1].strip('\n'))
+                    offset += 1
+
+                file.write('\n')
+                line_number += offset + 1
+
     # os.system('/home/michele/softs/enumlib/aux_src/makeStr.py 1 500')
     os.system('makeStr.py 1 500')
 
