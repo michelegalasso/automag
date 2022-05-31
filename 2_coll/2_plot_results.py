@@ -20,6 +20,16 @@ from ase.io import read
 from pymatgen.core.structure import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
+
+def better_sort(state):
+    if state[0] == 'nm':
+        return 'aa'
+    elif state[0][:2] == 'fm':
+        return 'aaa' + f'{int(state[0][2:]):3d}'
+    else:
+        return state[0][:3] + f'{int(state[0][3:]):3d}'
+
+
 # take care of the case when lower_cutoff has not been specified
 if 'lower_cutoff' not in globals():
     lower_cutoff = 0
@@ -104,7 +114,7 @@ for line, maginfo in zip(lines, maginfos):
 
         start = 0
         kept = True
-        for multiplicity in multiplicities:
+        for multiplicity in current_multiplicities:
             w_initial = initial[start:start + multiplicity]
             w_final = final[start:start + multiplicity]
             start += multiplicity
@@ -157,8 +167,6 @@ while setting < max_setting:
         final_energies = current_energies
     setting += 1
 
-
-
 # write states to file
 with open(f'states{final_setting:03d}.txt', 'wt') as f:
     json.dump(final_states, f)
@@ -174,7 +182,7 @@ shutil.copy(f'trials/setting{final_setting:03d}.vasp', '.')
 bar_labels = []
 energies = []
 kept_magmoms = []
-for key, value in sorted(data.items(), key=lambda t: t[0] if t[0][:2] != 'fm' else 'aaa' + t[0][2:]):
+for key, value in sorted(data.items(), key=better_sort):
     bar_labels.append(key)
     energies.append(value['energy'])
     kept_magmoms.append(value['kept_magmoms'])
