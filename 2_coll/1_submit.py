@@ -152,13 +152,17 @@ def launch_enumlib(count, split):
                 for mult in current_multipliers:
                     candidate_conf = np.multiply(transformed_configuration, mult).tolist()
 
-                    # if the first non-zero spin is negative flip all spins
-                    if np.nonzero(candidate_conf)[0][0]:
-                        candidate_conf = [-item for item in candidate_conf]
+                    # if all spins are zero do not include the NM configuration
+                    if len(np.nonzero(candidate_conf)[0]) > 0:
+                        first_nonzero_index = np.nonzero(candidate_conf)[0][0]
 
-                    # add to list of configurations for the current settings
-                    if candidate_conf not in configurations[index] and np.sum(np.abs(candidate_conf)) != 0:
-                        configurations[index].append(candidate_conf)
+                        # if the first non-zero spin is negative flip all spins
+                        if candidate_conf[first_nonzero_index] < 0:
+                            candidate_conf = [-item for item in candidate_conf]
+
+                        # add to list of configurations for the current settings
+                        if candidate_conf not in configurations[index]:
+                            configurations[index].append(candidate_conf)
 
     os.chdir('..')
 
@@ -239,13 +243,17 @@ for conf in product(*wyckoff_magmoms):
     for mult in equivalent_multipliers:
         candidate_conf = np.multiply(configuration, mult).tolist()
 
-        # if the first non-zero spin is negative flip all spins
-        if np.nonzero(candidate_conf)[0][0]:
-            candidate_conf = [-item for item in candidate_conf]
+        # if all spins are zero do not include the NM configuration
+        if len(np.nonzero(candidate_conf)[0]) > 0:
+            first_nonzero_index = np.nonzero(candidate_conf)[0][0]
 
-        # add to list of configurations for the current settings
-        if candidate_conf not in configurations[0] and np.sum(np.abs(candidate_conf)) != 0:
-            configurations[0].append(candidate_conf)
+            # if the first non-zero spin is negative flip all spins
+            if candidate_conf[first_nonzero_index] < 0:
+                candidate_conf = [-item for item in candidate_conf]
+
+            # add to list of configurations for the current settings
+            if candidate_conf not in configurations[0]:
+                configurations[0].append(candidate_conf)
 
 # split all possible combinations of Wyckoff positions
 splits = []
