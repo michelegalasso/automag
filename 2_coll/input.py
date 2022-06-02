@@ -1,8 +1,8 @@
 # name of the poscar file to use in the automag/geometries folder
-poscar_file = 'Ni3TeO6_setting002_2x1x1.vasp'
+poscar_file = 'Ni3TeO6_primitive.vasp'
 
 # maximum supercell size for generating distinct magnetic configurations
-supercell_size = 1
+supercell_size = 2
 
 # choose the absolute value given to up and down spins
 high_spin_value = 3
