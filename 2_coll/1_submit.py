@@ -98,7 +98,7 @@ def launch_enumlib(count, split):
                 line_number += offset + 1
 
     # os.system('/home/michele/softs/enumlib/aux_src/makeStr.py 1 500')
-    # os.system('makeStr.py 1 500')
+    os.system('makeStr.py 1 500')
 
     for j in range(501):
         if os.path.isfile(f'vasp.{j + 1}'):
