@@ -202,7 +202,7 @@ energies += 0.1 * max(energies)
 x_axis = np.arange(1, len(energies) + 1)
 
 # split into chunks if too many configurations
-n_chunks = len(energies) // 14
+n_chunks = len(energies) // 14 + 1
 x_axis_split = np.array_split(x_axis, n_chunks)
 energies_split = np.array_split(energies, n_chunks)
 kept_magmoms_split = np.array_split(kept_magmoms, n_chunks)
