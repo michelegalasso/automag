@@ -68,7 +68,7 @@ def launch_enumlib(count, split):
                 f.write(f'{symmetrized_structure.num_sites * 2:4d}\n')
 
     # process = subprocess.Popen('/home/michele/softs/enumlib/src/enum.x')
-    process = subprocess.Popen('enum.x')
+    # process = subprocess.Popen('enum.x')
     try:
         process.wait(timeout=60)
     except subprocess.TimeoutExpired:
@@ -98,7 +98,7 @@ def launch_enumlib(count, split):
                 line_number += offset + 1
 
     # os.system('/home/michele/softs/enumlib/aux_src/makeStr.py 1 500')
-    os.system('makeStr.py 1 500')
+    # os.system('makeStr.py 1 500')
 
     for j in range(501):
         if os.path.isfile(f'vasp.{j + 1}'):
@@ -224,6 +224,8 @@ for multiplicity, wyckoff in zip(multiplicities, symmetrized_structure.equivalen
                 new_equivalent_multipliers = []
                 for multiplier in equivalent_multipliers:
                     new_equivalent_multipliers.append(np.append(multiplier, np.repeat(high_spin_value, multiplicity)))
+
+                equivalent_multipliers = new_equivalent_multipliers
     else:
         wyckoff_magmoms.append([0])
 
