@@ -118,18 +118,18 @@ def launch_enumlib(count, split):
             index = len(lattices) - 1
             mapping = list(range(len(conf_poscar.structure.frac_coords)))
 
-        k = 0
-        groups = []
+        counter = 0
+        split_groups = []
         site_magmoms = []
-        for s, states in zip(split, wyckoff_magmoms):
-            if s:
-                groups.append([k, k + 1])
+        for to_split, states in zip(split, wyckoff_magmoms):
+            if to_split:
+                split_groups.append([counter, counter + 1])
                 for _ in range(2):
                     site_magmoms.append([1, -1])
-                    k += 1
+                    counter += 1
             else:
                 site_magmoms.append(states)
-                k += 1
+                counter += 1
 
         # adapt equivalent_multipliers in case of supercells
         coefficient = len(conf_poscar.structure) // len(structure)
@@ -142,36 +142,23 @@ def launch_enumlib(count, split):
         for conf in product(*site_magmoms):
             flag = True
             conf_array = np.array(conf)
-            for group in groups:
+            for group in split_groups:
                 if sum(conf_array[group]) != 0:
                     flag = False
             if flag:
                 configuration = np.repeat(conf, conf_poscar.natoms)
                 transformed_configuration = configuration[mapping]
 
-                if 'low_spin_value' in globals():
-                    for mult in current_multipliers:
-                        tmp = np.where(mult == 1, high_spin_value, mult)
-                        spin_mask = np.where(tmp == -1, low_spin_value, tmp)
-                        candidate_conf = np.multiply(configuration, spin_mask)
+                for mult in current_multipliers:
+                    candidate_conf = np.multiply(transformed_configuration, mult).tolist()
 
-                        add_flag = True
-                        for multiplier in current_multipliers:
-                            if np.multiply(candidate_conf, multiplier).tolist() in configurations[index]:
-                                add_flag = False
+                    # if the first non-zero spin is negative flip all spins
+                    if np.nonzero(candidate_conf)[0][0]:
+                        candidate_conf = [-item for item in candidate_conf]
 
-                        if add_flag and sum(abs(candidate_conf)) != 0:
-                            configurations[index].append(candidate_conf.tolist())
-                else:
-                    candidate_conf = high_spin_value * transformed_configuration
-
-                    add_flag = True
-                    for multiplier in current_multipliers:
-                        if np.multiply(candidate_conf, multiplier).tolist() in configurations[index]:
-                            add_flag = False
-
-                    if add_flag and sum(abs(candidate_conf)) != 0:
-                        configurations[index].append(candidate_conf.tolist())
+                    # add to list of configurations for the current settings
+                    if candidate_conf not in configurations[index] and np.sum(np.abs(candidate_conf)) != 0:
+                        configurations[index].append(candidate_conf)
 
     os.chdir('..')
 
@@ -214,16 +201,25 @@ equivalent_multipliers = []
 for multiplicity, wyckoff in zip(multiplicities, symmetrized_structure.equivalent_sites):
     if wyckoff[0].specie.is_magnetic:
         wyckoff_magmoms.append([1, 0, -1])
-        if len(equivalent_multipliers) == 0:
-            equivalent_multipliers.append(np.repeat(1, multiplicity))
-            equivalent_multipliers.append(np.repeat(-1, multiplicity))
-        else:
-            new_equivalent_multipliers = []
-            for multiplier in equivalent_multipliers:
-                new_equivalent_multipliers.append(np.append(multiplier, np.repeat(1, multiplicity)))
-                new_equivalent_multipliers.append(np.append(multiplier, np.repeat(-1, multiplicity)))
 
-            equivalent_multipliers = new_equivalent_multipliers
+        if 'low_spin_value' in globals():
+            if len(equivalent_multipliers) == 0:
+                equivalent_multipliers.append(np.repeat(high_spin_value, multiplicity))
+                equivalent_multipliers.append(np.repeat(low_spin_value, multiplicity))
+            else:
+                new_equivalent_multipliers = []
+                for multiplier in equivalent_multipliers:
+                    new_equivalent_multipliers.append(np.append(multiplier, np.repeat(high_spin_value, multiplicity)))
+                    new_equivalent_multipliers.append(np.append(multiplier, np.repeat(low_spin_value, multiplicity)))
+
+                equivalent_multipliers = new_equivalent_multipliers
+        else:
+            if len(equivalent_multipliers) == 0:
+                equivalent_multipliers.append(np.repeat(high_spin_value, multiplicity))
+            else:
+                new_equivalent_multipliers = []
+                for multiplier in equivalent_multipliers:
+                    new_equivalent_multipliers.append(np.append(multiplier, np.repeat(high_spin_value, multiplicity)))
     else:
         wyckoff_magmoms.append([0])
 
@@ -240,29 +236,16 @@ for multiplicity, wyckoff in zip(multiplicities, symmetrized_structure.equivalen
 for conf in product(*wyckoff_magmoms):
     configuration = np.repeat(conf, multiplicities)
 
-    if 'low_spin_value' in globals():
-        for mult in equivalent_multipliers:
-            tmp = np.where(mult == 1, high_spin_value, mult)
-            spin_mask = np.where(tmp == -1, low_spin_value, tmp)
-            candidate_conf = np.multiply(configuration, spin_mask)
+    for mult in equivalent_multipliers:
+        candidate_conf = np.multiply(configuration, mult).tolist()
 
-            add_flag = True
-            for multiplier in equivalent_multipliers:
-                if np.multiply(candidate_conf, multiplier).tolist() in configurations[0]:
-                    add_flag = False
+        # if the first non-zero spin is negative flip all spins
+        if np.nonzero(candidate_conf)[0][0]:
+            candidate_conf = [-item for item in candidate_conf]
 
-            if add_flag and sum(abs(candidate_conf)) != 0:
-                configurations[0].append(candidate_conf.tolist())
-    else:
-        candidate_conf = high_spin_value * configuration
-
-        add_flag = True
-        for multiplier in equivalent_multipliers:
-            if np.multiply(candidate_conf, multiplier).tolist() in configurations[0]:
-                add_flag = False
-
-        if add_flag and sum(abs(candidate_conf)) != 0:
-            configurations[0].append(candidate_conf.tolist())
+        # add to list of configurations for the current settings
+        if candidate_conf not in configurations[0] and np.sum(np.abs(candidate_conf)) != 0:
+            configurations[0].append(candidate_conf)
 
 # split all possible combinations of Wyckoff positions
 splits = []
