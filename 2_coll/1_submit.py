@@ -68,7 +68,7 @@ def launch_enumlib(count, split):
                 f.write(f'{symmetrized_structure.num_sites * 2:4d}\n')
 
     # process = subprocess.Popen('/home/michele/softs/enumlib/src/enum.x')
-    # process = subprocess.Popen('enum.x')
+    process = subprocess.Popen('enum.x')
     try:
         process.wait(timeout=60)
     except subprocess.TimeoutExpired:
