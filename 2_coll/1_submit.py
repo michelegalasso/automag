@@ -110,7 +110,7 @@ def launch_enumlib(count, split):
             index = lattices.index(conf_poscar.structure.lattice)
             current_coords = conf_poscar.structure.frac_coords.tolist()
             reference_coords = coordinates[index].tolist()
-            mapping = [current_coords.index(coord) for coord in reference_coords]
+            mapping = [np.nonzero([np.allclose(cur, ref) for cur in current_coords])[0][0] for ref in reference_coords]
         else:
             lattices.append(conf_poscar.structure.lattice)
             coordinates.append(conf_poscar.structure.frac_coords)
