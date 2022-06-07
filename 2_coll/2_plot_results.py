@@ -152,19 +152,19 @@ setting = 1
 final_states = []
 final_setting = setting
 final_energies = []
+final_min = np.inf
 while setting < max_setting:
     current_states = []
     current_energies = []
     for init_state, value in data.items():
-        if 'energy' not in value:
-            not_found.append(init_state)
         if init_state != 'nm' and value['setting'] == setting and value['kept_magmoms']:
             current_states.append(np.sign(value['init_spins']).tolist())
             current_energies.append(value['energy'])
-    if len(current_states) > len(final_states):
+    if min(current_energies) < final_min:
         final_setting = setting
         final_states = current_states
         final_energies = current_energies
+        final_min = min(current_energies)
     setting += 1
 
 # write states to file
