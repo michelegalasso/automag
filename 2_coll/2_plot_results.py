@@ -236,7 +236,7 @@ for i, (X, Y, kept_magmoms_chunk, bar_labels_chunk) in \
     plt.ylim(top=toplim)
 
     # save or show bar chart
-    plt.savefig(f'stability{i + 1}.png', bbox_inches='tight')
+    plt.savefig(f'stability{i + 1:02d}.png', bbox_inches='tight')
     plt.close()
 
 print(f'The most stable configuration is {bar_labels[np.argmin(energies)]}.')
