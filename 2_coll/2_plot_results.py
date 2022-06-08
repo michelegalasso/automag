@@ -124,7 +124,7 @@ for line, maginfo in zip(lines, maginfos):
                     kept = False
             else:
                 prod = np.multiply(np.sign(w_initial), w_final)
-                if prod.max() - prod.min() > 0.1:
+                if prod.max() - prod.min() > 0.25:
                     kept = False
 
         if kept and flag:
