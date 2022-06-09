@@ -1,5 +1,5 @@
 # name of the poscar file to use in the automag/geometries folder
-poscar_file = 'Ca3MnCoO6_primitive.vasp'
+poscar_file = 'Fe2O3-alpha_conventional.vasp'
 
 # maximum supercell size for generating distinct magnetic configurations
 supercell_size = 1
@@ -18,9 +18,14 @@ params = {
     'ncore': 4,
     'encut': 820,
     'ediff': 1e-6,
+    'ediffg': -2e-3,
+    'ibrion': 2,
+    'isif': 3,
+    'nsw': 300,
+    'potim': 0.2,
     'ismear': 1,
     'sigma': 0.1,
-    'nelm': 200,
+    'nelm': 80,
     'kpts': 20,
     'lmaxmix': 4,
     'lcharg': False,
@@ -28,9 +33,9 @@ params = {
     'isym': 0,
     'ldau': True,
     'ldautype': 2,
-    'ldaul': [-1, 2, 2, -1],
-    'ldauu': [0, 6.64, 6.76, 0],
-    'ldauj': [0, 0, 0, 0],
+    'ldaul': [2, -1],
+    'ldauu': [3.75, 0],
+    'ldauj': [0, 0],
     'ldauprint': 2,
 }
 
