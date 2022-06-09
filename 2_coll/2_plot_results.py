@@ -133,7 +133,7 @@ for line, maginfo in zip(lines, maginfos):
             data[init_state]['kept_magmoms'] = False
             red.append(init_state)
 
-        data[init_state]['energy'] = float(values[-1].split('=')[1]) / len(initial)
+        data[init_state]['energy'] = float(values[-1].split('=')[1]) / len(initial)     # energy per atom
 
 if len(red) != 0:
     print(f"The following {len(red)} configuration(s) did not keep the original magmoms and will be marked in red "
@@ -190,7 +190,7 @@ for key, value in sorted(data.items(), key=better_sort):
 energies = np.array(energies)
 kept_magmoms = np.array(kept_magmoms)
 
-# energies from eV/magnetic atom to meV/magnetic atom
+# energies from eV/atom to meV/atom
 energies *= 1000
 
 # normalize energies for plot

@@ -51,6 +51,9 @@ for element in structure.composition.elements:
         else:
             element.is_magnetic = False
 
+# from eV/atom to total energy of the unit cell
+energies = structure.num_sites * np.array(energies)
+
 
 def system(configurations):
     matrix = []
@@ -59,7 +62,7 @@ def system(configurations):
         for distance in unique_distances:
             count = 0
             for atom1, atom2, d in zip(center_indices, point_indices, distances):
-                if np.isclose(d, distance, atol=0.05):
+                if np.isclose(d, distance, atol=0.02):
                     count += item[atom1] * item[atom2]
             equation.append(-count // 2)
         matrix.append(equation)
@@ -78,8 +81,8 @@ fit_group_size = 1 - control_group_size
 index = int(round(len(states) * fit_group_size))
 configurations_fit = np.array(states[:index])
 configurations_control = np.array(states[index:])
-energies_fit = np.array(energies[:index])
-energies_control = np.array(energies[index:])
+energies_fit = energies[:index]
+energies_control = energies[index:]
 
 A = system(configurations_fit)
 values = np.linalg.lstsq(A, energies_fit, rcond=None)
@@ -88,25 +91,25 @@ B = system(configurations_control)
 predictions = B @ values[0]
 PCC = np.corrcoef(predictions, energies_control)
 
-magnetic_atom = structure
 plt.rcParams.update({'font.size': 15})
 plt.locator_params(axis='x', nbins=5)
-plt.xlabel(f'Heisemberg model free energy (eV/{structure.types_of_species[0].name} atom)')
-plt.ylabel(f'DFT free energy (eV/{structure.types_of_species[0].name} atom)')
+plt.xlabel(f'Heisemberg model energy (eV)')
+plt.ylabel(f'DFT energy (eV)')
 
 # print results
 if np.linalg.matrix_rank(A) == len(unique_distances) + 1:
-    with open('input.py', 'a') as f:
-        f.write('\n# LINE ADDED BY THE SCRIPT 1_coupling_constants.py')
-        f.write(f'\ndistances_between_neighbors = {unique_distances.tolist()}\n')
-
-        coupling_constants = values[0][1:] * 1.60218e-19
-        f.write('\n# LINE ADDED BY THE SCRIPT 1_coupling_constants.py')
-        f.write(f'\ncoupling_constants = {np.array2string(coupling_constants, precision=8, separator=", ")}\n')
-
+    coupling_constants = values[0][1:] * 1.60218e-19
     print(f'distances between neighbors: {unique_distances.tolist()}')
     print(f'counts: {counts.tolist()}')
     print(f'coupling constants: {np.array2string(coupling_constants, precision=8, separator=", ")}')
+
+    if append_coupling_constants:
+        with open('input.py', 'a') as f:
+            f.write('\n# LINE ADDED BY THE SCRIPT 1_coupling_constants.py')
+            f.write(f'\ndistances_between_neighbors = {unique_distances.tolist()}\n')
+
+            f.write('\n# LINE ADDED BY THE SCRIPT 1_coupling_constants.py')
+            f.write(f'\ncoupling_constants = {np.array2string(coupling_constants, precision=8, separator=", ")}\n')
 
     plt.scatter(predictions, energies_control, label=f'PCC: {PCC[0, 1]:.2f}')
     plt.legend()
