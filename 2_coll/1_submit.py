@@ -317,6 +317,6 @@ for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, con
             f.write(' '.join(f'{e:2d}' for e in conf_array[mask]))
             f.write('\n')
 
-        run = SubmitFirework(f'setting{i + 1:03d}.vasp', mode='singlepoint', fix_params=params, magmoms=conf,
+        run = SubmitFirework(f'setting{i + 1:03d}.vasp', mode='relax', fix_params=params, magmoms=conf,
                              name=state)
         run.submit()
