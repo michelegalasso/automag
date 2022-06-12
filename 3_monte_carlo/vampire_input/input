@@ -21,6 +21,7 @@ dimensions:system-size-z = 5 !nm
 #------------------------------------------
 material:file=vamp.mat
 material:unit-cell-file=vamp.ucf
+
 #------------------------------------------
 # Simulation attributes:
 #------------------------------------------
@@ -31,6 +32,7 @@ sim:temperature-increment=1
 sim:time-steps-increment=1
 sim:equilibration-time-steps=20000
 sim:loop-time-steps=40000
+
 #------------------------------------------
 # Program and integrator details
 #------------------------------------------
