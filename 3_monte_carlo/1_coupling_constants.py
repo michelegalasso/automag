@@ -91,9 +91,9 @@ B = system(configurations_control)
 predictions = B @ values[0]
 PCC = np.corrcoef(predictions, energies_control)
 
-plt.rcParams.update({'font.size': 15})
+plt.rcParams.update({'font.size': 13})
 plt.locator_params(axis='x', nbins=5)
-plt.xlabel(f'Heisemberg model energy (eV)')
+plt.xlabel(f'Heisenberg model energy (eV)')
 plt.ylabel(f'DFT energy (eV)')
 
 # print results
