@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 
 # increase matplotlib pyplot font size
-plt.rcParams.update({'font.size': 18})
+plt.rcParams.update({'font.size': 20})
 
 calcfold = os.path.join(os.environ.get('AUTOMAG_PATH'), 'CalcFold')
 data = np.loadtxt(os.path.join(calcfold, 'charges.txt'))
@@ -42,4 +42,4 @@ plt.xlabel('α (eV)')
 plt.ylabel('d-electrons on first Fe site')
 plt.legend()
 # plt.show()
-plt.savefig('Ucalc.png')
+plt.savefig('Ucalc.png', bbox_inches='tight')
