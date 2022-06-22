@@ -6,6 +6,7 @@ chardet
 click
 cryptography
 cycler
+dataclasses
 decorator
 dnspython
 fabric
@@ -29,6 +30,7 @@ palettable
 pandas
 paramiko
 Pillow
+pip
 plotly
 pycparser
 pymatgen
@@ -42,6 +44,7 @@ retrying
 ruamel.yaml
 ruamel.yaml.clib
 scipy
+setuptools
 six
 spglib
 sympy
@@ -50,3 +53,4 @@ tqdm
 uncertainties
 urllib3
 Werkzeug
+wheel
