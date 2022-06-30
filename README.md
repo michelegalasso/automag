@@ -1,223 +1,281 @@
 # Automag
-Automatic search for the most stable magnetic state of a
-given structure. From the geometry of a structure, you can
-find its most stable collinear magnetic configuration and
-you can get an estimate of the critical temperature of the
+An automatic workflow software for calculating the ground collinear magnetic
+state of a given structure and for estimating the critical temperature of the
 magnetically ordered to paramagnetic phase transition.
-At the moment, the code can treat structures with only
-one magnetic atomic type in the unit cell.
 
 ## Installation
-Start by installing Automag on your local machine.
-I suppose that you have Python 3 installed in your system,
-and that it is accessible through the command `python`.
-Give the following commands
+Automag is meant to be run on a computing cluster. The first step in the
+installation is to clone the repository
 
-1.  `git clone https://github.com/michelegalasso/automag.git`
-2.  `cd automag`
-3.  `python -m venv .venv`
-4.  `.venv\Scripts\activate` or for Linux just use `source .venv/bin/activate`
-5.  `pip install -r requirements.txt`
+`git clone https://github.com/michelegalasso/automag.git`
 
-Make sure that enumlib (https://github.com/msg-byu/enumlib)
-is installed on your local machine and that your command
-line has access to the commands `enum.x` and `makeStr.py`.
-Then repeat the above operations on your supercomputer,
-in order to install Automag there as well. On your
-supercomputer, you need also to create a folder named
-`fw_calcs` in your home directory. Here Automag will save
-the results of calculations. Automag needs to know how to
-launch VASP, so edit the file `automag/ase/run_vasp.py`
-and add the following lines to your `~\.bashrc` file
+I assume that you have Python 3 installed on your system, accessible through
+the `python` command, with the `wheel` and the `venv` packages installed.
+After cloning, go to the `automag` directory which has appeared and initialize
+a Python virtual environment
 
-- `export PYTHONPATH=/PATH/TO/automag:$PYTHONPATH`
-- `export VASP_SCRIPT=/PATH/TO/automag/ase/run_vasp.py`
-- `export VASP_PP_PATH=/PATH/TO/pp`
+`cd automag`  
+`python -m venv .venv`
 
-obviously replacing `/PATH/TO` with the actual path to these
-files or directories. The `pp` folder is the VASP
-pseudopotential library and it should contain two subfolders
-named, respectively, `potpaw_LDA` and `potpaw_PBE`.
-Depending on the editor that you use on your local machine
-in order to modify and run the code, you may need to add
-the first of these three lines to your `~\.bashrc` file
-in your local machine as well. With the editor Pycharm
-(https://www.jetbrains.com/pycharm) this is not necessary.
+After that, activate your virtual environment. If you are working on an Unix-like
+system, you can do it with the command
 
-Before starting to use Automag, you should also make sure
-to have the FireWorks libraries on your supercomputer and
-your local machine pointing to the same MongoDB database,
-and your FireWorks library on your supercomputer must be
-configured for launching jobs through a queue management
-system (for more detailed information refer to the
-FireWorks documentation). Last but not least, open the file
-`automag/common/SubmitFirework.py` and edit line 22 with
-the location of your `my_launchpad.yaml` file.
+`source .venv/bin/activate`
 
-Now you are ready to use Automag.
+Finally, you need to install all the necessary Python dependencies for Automag
+with the command
+
+`pip install -r requirements.txt`
+
+Before using Automag, make sure that enumlib is installed on your system and
+that that your command line has access to the commands `enum.x` and `makeStr.py`.
+In addition, Automag needs to know how to use VASP, so you need to edit the file
+`automag/ase/run_vasp.py` for Automag to correctly load the MKL and MPI libraries
+(if needed) and call the `vasp_std` executable on your system. Then add the
+following lines to your `~/.bashrc` file
+
+`export PYTHONPATH=/PATH/TO/automag:$PYTHONPATH`  
+`export VASP_SCRIPT=/PATH/TO/automag/ase/run_vasp.py`  
+`export VASP_PP_PATH=/PATH/TO/pp`  
+`export AUTOMAG_PATH=/PATH/TO/automag`
+
+obviously replacing `/PATH/TO` with the actual path to these files or directories.
+The `pp` folder is the VASP pseudopotential library and it should contain two
+subfolders named, respectively, `potpaw_LDA` and `potpaw_PBE`.
+
+Before starting to use Automag, you should also make sure to have the FireWorks
+library correctly pointing to a MongoDB database and configured for launching
+jobs through a queue management system (for more detailed information refer
+to the FireWorks documentation). Last but not least, open the file
+`automag/common/SubmitFirework.py` and edit line 23 with the location of your
+`my_launchpad.yaml` file. Now you are ready to use Automag.
 
 ## Convergence tests
 
-When studying a magnetic structure, you may want to start
-from convergence tests. Automag allows you to check for
-convergence of the VASP parameter `ENCUT` (the energy cutoff
-of the plane wave basis set) and to simultaneously check for
-convergence of the two parameters `SIGMA` and `kpts`, which
-are the smearing parameter of the electronic temperature
-and the k-mesh for Brillouin zone sampling, respectively.
+When studying a magnetic structure, you may want to start from convergence tests.
+Automag allows you to check for convergence of the VASP parameter `ENCUT`, which
+is the energy cut-off of the plane wave basis set, and to simultaneously check for
+convergence of the two parameters `SIGMA` and `kpts`, which are the electronic
+smearing parameter and the k-mesh resolution parameter for Brillouin zone sampling,
+respectively.
 
-On your local machine, open the file `submit.py` in the
-`0_conv_tests` folder. At line 15 choose the desired mode:
-'encut' or 'kgrid', at line 18 put the location of the file
-which contains your input structure in POSCAR format, at
-line 21 you can choose the magnetic state to use for spin
-initialization, at lines 25-35 you can tune the other VASP
-parameters used during the convergence test and at lines
-41-44 and 52-55 you can choose which trial parameters to
-use for each convergence test, respectively.
+In order to run convergence tests, go to the folder `0_conv_tests` and insert the
+following input parameters in the file `input.py`:
 
-When you are satisfied with your `submit.py` file on your
-local machine, launch it in order to save the convergence
-test calculations on your remote database. Then go to your
-supercomputer and, in the `fw_calcs` folder, give the command
+- `mode` can be "encut" for convergence tests with respect to `ENCUT` or "kgrid"
+for convergence tests with respect to `SIGMA` and `kpts`;
+- `poscar_file` is the name of the file in POSCAR format which contains the input
+geometry and which has been put in the folder `automag/geometries`;
+- `params` is a collection of VASP parameters to be used during single point
+energy calculations.
 
+In addition, the following optional parameters can be specified:
+
+- `magnetic_atoms` contains the atomic types to be considered magnetic (defaults
+to transition metals);
+- `configuration` is the magnetic configuration to use for convergence tests
+(defaults to ferromagnetic high-spin);
+- `encut_values` contains the trial values for `ENCUT` (defaults to the interval
+[500, 1000] eV at steps of 10 eV);
+- `sigma_values` contains the trial values for `SIGMA` (defaults to the interval
+[0.05, 0.20] eV at steps of 0.05 eV);
+- `kpts_values` contains the trial values for `kpts` (defaults to the interval
+[20, 100] A^-1 at steps of 10 A^-1).
+
+Once you have inserted the input parameters in the file `input.py`, launch the
+script `1_submit.py` using the `python` executable of your virtual environment and
+a number of workflows containing single point VASP calculations will be saved in
+your remote database. These calculations need to be run in a separate directory
+called `CalcFold`. You can create it and then submit the jobs with the following
+commands, being in the `automag` directory
+
+`mkdir CalcFold`  
+`cd CalcFold`  
 `nohup qlaunch -r rapidfire -m 10 --nlaunches=infinite &`
 
-This will invoke the `qlaunch` command in the background,
-which constantly checks for new calculations in the remote
-database and submits them to the queue management system.
-In the following, I assume that the `qlaunch` process is
-always working in the background on your supercomputer.
+This will create a new directory `CalcFold` and it will invoke the `qlaunch`
+command in the background, which constantly checks for new calculations in the
+remote database and submits them to the queue management system of your cluster.
+The command line option `-m 10` means that `qlaunch` will allow a maximum number
+of 10 jobs to be in the queue of your system at the same time. If 10 or more
+jobs are waiting or running in your queue, `qlaunch` will not submit more jobs
+until their total number becomes less than 10. If you wish, you can change this
+parameter to a different number. In the following, I assume that the `qlaunch`
+process is  always working in the background.
 
-When calculations are done, copy the output file which you
-find in the `fw_calcs` folder in the `0_conv_tests` folder
-on your local machine and open the file `plot_results.py`.
-At line 17 choose the desired mode and at line 54put the
-correct chemical formula of the system under study. Then
-launch the script. A PNG file will be created with a visual
-representation of the results of the convergence test.
+After all calculations have been completed, you can launch the script named
+`2_plot_results.py` in the `0_conv_tests` folder. It will read the output file
+that Automag wrote in `CalcFold` and it will produce a plot of the parameters
+under study versus energy. In addition, the script will also print on screen the
+values of the parameters under study for which the error in energy is less than
+1 meV/atom with respect to the most accurate result.
 
 ## Calculation of the electronic correlation parameter U by linear response
 
-On your local machine, open the file `submit.py` in the
-`1_lin_response` folder. The linear response formalism for
-the calculation of the Hubbard U is based on the application
-of a series of small perturbations to the first magnetic
-atom. Automag isolates the first atom of the structure by
-fictitiously changing its type. For this you need that
+The linear response formalism for the calculation of the Hubbard U is based on
+the application of a series of small perturbations to the first magnetic atom.
+During the whole process, the perturbed atom must be treated independently from
+the other atoms of the same species, and we achieve this using a simple trick: we
+change the chemical identity of the atom to which we want to apply perturbations
+to a dummy atomic species, but we place the POTCAR file of the original atomic
+species in the `pp` folder corresponding to the dummy atom. For example, if we are
+calculating the value of the Hubbard U for Fe in the system Fe12O18 and we choose
+Zn as dummy atom, we need to ensure that the same POTCAR file of Fe is used also
+for Zn in order to have, instead of Zn, a Fe atom that is treated independently
+from the others. This can be achieved with the following commands
 
-- the magnetic atomic type is listed first in your input
-POSCAR file
-- the VASP pseudopotential library on your supercomputer,
-for the fictitious atomic type written at line 30 of the
-`submit.py` file contains the same POSCAR file as your
-actual magnetic atomic type (make this substitution by hand).
+`cd $VASP_PP_PATH/potpaw_PBE/Zn`  
+`mv POTCAR _POTCAR`  
+`cp ../Fe/POTCAR .`
 
-Before launching `submit.py`, you can edit the location of
-the input structure at line 16, the magnetic state to use
-for spin initialization at line 19 and the VASP parameters
-at lines 36-47. Then launch the script. It will submit a
-single VASP calculation: the bare run.
+In this way the Automag code, and in particular the ASE library, will treat the
+system as if it was ZnFe11O18, but when they will look for the POTCAR file in the
+`Zn` folder, they will find the POTCAR of Fe, so the system will remain Fe12O18.
+Before launching this calculation, go to the directory `1_lin_response` and set
+the necessary parameters in the file `input.py`:
 
-When the calculation has ended on your supercomputer, put
-its calculation folder at line 25 of `submit.py`, change
-the mode to 'NSC' at line 22 and relaunch the script.
-Finally, change the mode to 'SC' and launch it again.
-The non-selfconsistent and the selfconsistent runs will
-be submitted.
+- `poscar_file` is the name of the file in POSCAR format which contains the input
+geometry and which has been put in the folder `automag/geometries`;
+- `dummy_atom` is the name of the dummy atomic species to use for the atom which
+is subject to perturbations (do not forget to manually put the right POTCAR file
+in the `pp` folder for this atom);
+- `dummy_position` is the position of the dummy atom in your POSCAR file (from 0
+to N - 1, where N is the number of atoms in the unit cell);
+- `perturbations` contains the values of the perturbations to apply to the chosen
+atom in eV;
+- `params` is a collection of VASP parameters to be used during single point
+energy calculations.
 
-When calculations are done, from the output file in the
-`fw_calcs` folder you can get the FireWorks ID of each
-calculation and, using the command `lpad get_launchdir [ID]`
-you can know its calculation folder. For each
-non-selfconsistent and selfconsistent run, check from the
-`OUTCAR` file that the magnetic moments have not changed
-their orientation from the initialized values and copy the
-values of the charge on the partially occupied electron
-shell of the first atom in the file `plot_results.py` on
-your local machine at lines 22 and 23, respectively. Double
-check that they correspond to the perturbations listed at
-line 19. Then lauch the `plot_results.py` script. A PNG
-file will be produced with the linear interpolations of the
-response functions for the non-selfconsistent and the
-selfconsistent runs, with the values of their slopes
-indicated on the graph. The value of the Hubbard U can be
-obtained from U = 1/X - 1/X0, where X and X0 are the
-selfconsistent and the non-selfconsistent slopes, respectively.
+In addition, the following optional parameters can be specified:
+
+- `magnetic_atoms` contains the atomic types to be considered magnetic (defaults
+to transition metals);
+- `configuration` is the magnetic configuration to use for U calculation (defaults
+to ferromagnetic high-spin).
+
+Once the input parameters have been inserted in the file `input.py`, you can
+launch the script `1_submit.py` in order to save the necessary VASP jobs to the
+remote database. You will see that the instance of `qlaunch` which is running in
+the background will immediately send these jobs to the queue management system
+of your cluster. When all calculations are completed, you will find in `CalcFold`
+the file `charges.txt`, containing the amount of electrons on the partially
+occupied shell of the chosen atom for each value of the applied perturbation,
+for both the selfconsistent and the non-selfconsistent runs. Now you can execute
+the script `2_plot_results.py`, which will plot the selfconsistent and the
+non-selfconsistent responses, it will interpolate them as straight lines to the
+least squares and it will calculate their slopes. The value of U is obtained from
+U = 1/X - 1/X0, where X and X0 are the selfconsistent and the non-selfconsistent
+slopes, respectively.
 
 ## Search for the most stable magnetic state
 
-Enter the directory `2_coll` on your local machine and open
-the file `run_enumlib.py`. You need to put the correct unit
-cell composition at line 16, you need to specify which atoms
-have non-zero magnetization at line 17 and to point to the
-correct input file with the structure at line 23. At line 20,
-you can write the maximum size of the supercell for generating
-antiferromagnetic configurations. Then launch the script.
-After its execution, you will see a new folder named `enumlib`
-with the results of the run. The most important files in this
-folder are the ones which start with the word 'vasp'. They all
-contain your initial geometry in POSCAR format, but with the
-magnetic atoms split into two groups: one to be assigned spin
-up and the other to be assigned spin down.
+The search for the ground collinear magnetic state consists in generating a
+number of trial configurations and in computing their single point energy, in
+order to determine which is the most thermodynamically stable. The trial
+configurations differ from each other only by the choice of the unit cell and by
+the initialization of the magnetic moments. Note that the value of the magnetic
+moment on each atom can change during the single point energy calculation.
+Automag generates trial configurations by separately initializing each Wyckoff
+position occupied by magnetic atoms in a ferromagnetic (FM), antiferromagnetic
+(AFM) or non magnetic (NM) fashion, taking into account all possible combinations.
+In this way, overall ferrimagnetic (FiM) states are allowed if the magnetic atoms
+occupy more than one Wyckoff position. If only a single intensity for the
+magnetization is given in input, this value is used for initializing all the
+spin-up and spin-down states in the configurations generated by Automag.
+Conversely, if two separate values are given for high-spin (HS) and low-spin (LS)
+states, then each Wyckoff position is separately initialized in a HS or LS
+fashion, taking into account all possible combinations. In order to run such a
+calculation, go to the directory `2_coll` and set the necessary input parameters
+in the file `input.py`:
 
-At this point you can open the file `submit.py`, which is used
-to save to the remote database a single point energy
-calculation for each antiferromagnetic configuration in the
-`enumlib` folder, as well as an energy calculation for the
-ferromagnetic state. You can put the correct unit cell
-composition at line 18, the magnetic atomic type at line 19,
-the values used to initialize magnetic moments at lines 20-21
-and the VASP parameters at lines 27-53. Then launch the script.
+- `poscar_file` is the name of the file in POSCAR format which contains the input
+geometry and which has been put in the folder `automag/geometries`;
+- `supercell_size` is the maximum supercell size for generating distinct magnetic
+configurations, in multiples of the input structure;
+- `high_spin_value` is the absolute value of the magnetization in Bohr magnetons
+which is given to HS states, if the optional parameter `low_spin_value` is
+provided, or to all up and down spins, conversely;
+- `params` is a collection of VASP parameters to be used during single point
+energy calculations.
 
-When all the single point energy calculations are done on
-your supercomputer, copy the output files that you find in the
-`fw_calcs` folder to the `2_coll` folder on your local machine
-and open the script `plot_results.py`. Put the correct
-filenames at line 16, the magnetic atomic type at line 17 and
-run the script. It will print a warning on screen if some
-calculations did not converge and it will produce the file
-`stability.png`, which is a histogram of the final energies of
-all magnetic configurations which have been calculated. If the
-magnetic moments did not change orientation after the energy
-calculation the corresponding bar is blue, otherwise it is red.
+In addition, the following optional parameters can be specified:
+
+- `low_spin_value` is the absolute value of the magnetization in Bohr magnetons
+which is given to LS states;
+- `magnetic_atoms` contains the atomic types to be considered magnetic (defaults
+to transition metals);
+- `lower_cutoff` is the minimum value in Bohr magnetons to which a magnetic moment
+can fall in order for the corresponding configuration to be used for estimating
+the critical temperature of the material (defaults to zero).
+
+Once the input parameters have been inserted in the file `input.py`, you can
+launch the script `1_submit.py` in order to save the necessary VASP jobs to the
+remote database. The running instance of `qlaunch` will send these jobs to the
+queue management system of your cluster. Once all calculations have been
+completed, you can launch the script `2_plot_results.py` which will produce a
+number of files containing the histogram plot of the obtained energies for all
+trial configurations that successfully completed the single point energy
+calculation. The script also prints on screen the name of the configuration
+with lowest energy.
 
 ## Calculation of the critical temperature
 
-Automag can calculate the critical temperature of the
-magnetically ordered to paramagnetic phase transition from a
-Monte Carlo simulation of the effective Hamiltonian which
-describes the magnetic interaction. For this you need to have
-the program VAMPIRE installed in your system.
+Automag can calculate the critical temperature of the magnetically ordered to
+paramagnetic phase transition from a Monte Carlo simulation of the effective
+Hamiltonian which describes the magnetic interaction. Automag computes the
+coupling constants of the corresponding Heisenberg model and provides all the
+necessary input files to run the Monte Carlo simulation with the VAMPIRE software
+package. The simulation itself needs to be run by the user, while Automag can be
+used to plot and to fit the results. The accuracy of the Heisenberg model is
+evaluated by computing the Pearson Correlation Coefficient (PCC) between the
+DFT energies and the predicted energies of a control group of magnetic
+configurations. It is worth noting that this approach can be applied only if all
+magnetic atoms have the same absolute value of the magnetization. In order to
+estimate the critical temperature with Automag, go to the folder `3_monte_carlo`
+and set the necessary parameters in the file `input.py`:
 
-Open the file `get_configurations.py` in the folder
-`3_monte_carlo`, tune the input parameters at lines 20-27 and
-run the script. For the most abundant geometry among those
-generated by enumlib, it will save the magnetic configurations
-and their corresponding energies in the output files
-`configurations.txt` and `energies.txt`. Then open the script
-`coupling_constants.py` and tune the input parameters at lines
-17-21. It will read the output files of the previous script and,
-for all nearest neighbors in the magnetic sublattice at a
-distance less than the given cutoff, it will calculate the
-coupling constants of the corresponding Heisemberg model from
-a least squares interpolation of the arising system of
-equations. In addition, it will produce an output file
-`model.png` with a comparison of the Heisemberg model energies
-with the DFT energies, which allows you to estimate the accuracy
-of the model. The script `run_vampire.py` produces the input
-file `vamp.ucf` for the software VAMPIRE, which is error-prone
-and time-consuming to write by hand, based on the output from
-the previous script. For this you need to report the
-information printed on screen by `coupling_constants.py` at
-lines 15-17 of `run_vampire.py` and to run the script.
-A template of the other input files for the program VAMPIRE is
-provided in the `vampire_input` folder.
+- `configuration` is the name of the magnetic configuration to use for the Monte
+Carlo simulation (usually you want to put here the name of the configuration with
+lowest energy, obtained at the previous step);
+- `cutoff_radius` is the maximum distance between two magnetic atoms to be
+considered as interacting neighbors;
+- `control_group_size` is the relative size of the control group used to evaluate
+the accuracy of the Heisenberg model;
+- `append_coupling_constants` is a boolean flag which tells Automag whether or not
+to append the computed values of the coupling constants to the file `input.py`,
+which are needed by the script `2_write_vampire_ucf.py`.
 
-Once the VAMPIRE calculation has ended, you can place the
-`output` file written by VAMPIRE in the `3_monte_carlo` folder
-and run the script `plot_results.py`. It will produce a file
-`magnetization.png` which contains a plot of the mean
-magnetization length with respect to temperature, from which
-you can estimate the critical temperature of the magnetically
-ordered to paramagnetic phase transition.
+In addition, the following optional parameter can be specified:
+
+- `magnetic_atoms` contains the atomic types to be considered magnetic (defaults
+to transition metals).
+
+Once the input parameters have been inserted in the file `input.py`, you can
+launch the script `1_coupling_constants.py`. It will compute the coupling
+constants for the given cutoff radius and it will print their values on screen.
+In addition, it will create a file `model.png`, which contains a plot of the
+Heisenberg model energies versus the DFT energies for all the configurations in
+the control group. The values of the distances between neighbors, the amounts of
+neighboring pairs of magnetic atoms in the unit cell at each distance and the
+value of the PCC are also printed on screen.
+
+We suggest to run the script `1_coupling_constants.py` a couple of times with the
+`append_coupling_constants` flag set to `False` and with different values of the
+`cutoff_radius`, in order to investigate how many neighbors you need to include
+for obtaining a well-converged Heisenberg model. Once you are satisfied with the
+model's accuracy, run the script a last time with the `append_coupling_constants`
+flag set to `True` and Automag will append the values of the coupling constants
+and the distances between neighbors to the file `input.py`. Now you are ready to
+run the script `2_write_vampire_ucf.py`, which will read the file `input.py` and
+will produce a VAMPIRE unit cell file `vamp.ucf`. Now you can run VAMPIRE on your
+cluster using the unit cell file written by Automag, an input file and a material
+file specific for your problem. Automag contains a sample input file and a sample
+material file in the folder `3_monte_carlo/vampire_input`, which can be simply
+edited and adapted to the problem under study. Once the VAMPIRE run is done, you
+can copy the `output` file in the folder `3_monte_carlo` and run the last script
+`3_plot_results.py`. It will produce a plot of the mean magnetization length (of
+the spin-up channel for antiferromagnetic materials) versus temperature obtained
+from the Monte Carlo simulation and it will fit the data using the analytical
+expression of the mean magnetization length, obtaining the values of the critical
+temperature and of the critical exponent. The fitted values of these two
+parameters are printed on screen.
