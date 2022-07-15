@@ -1,11 +1,11 @@
 # name of the poscar file to use in the automag/geometries folder
-poscar_file = 'Ni3TeO6_primitive.vasp'
+poscar_file = 'Fe2O3-alpha_primitive.vasp'
 
 # maximum supercell size for generating distinct magnetic configurations
-supercell_size = 2
+supercell_size = 1
 
 # choose the absolute value given to up and down spins
-high_spin_value = 3
+high_spin_value = 5
 
 # if included all Wyckoff positions could be either HS or LS
 # low_spin_value = 1
@@ -16,7 +16,7 @@ params = {
     'setups': 'recommended',
     'prec': 'Accurate',
     'ncore': 4,
-    'encut': 830,
+    'encut': 820,
     'ediff': 1e-6,
     'ismear': 1,
     'sigma': 0.1,
@@ -28,8 +28,8 @@ params = {
     'isym': 0,
     'ldau': True,
     'ldautype': 2,
-    'ldaul': [2, -1, -1],
-    'ldauu': [5.17, 0, 0],
+    'ldaul': [2, -1],
+    'ldauu': [3.51, 0],
     'ldauj': [0, 0, 0],
     'ldauprint': 2,
 }
