@@ -245,7 +245,7 @@ for conf in product(*wyckoff_magmoms):
     for mult in equivalent_multipliers:
         candidate_conf = np.multiply(configuration, mult).tolist()
 
-        # if all spins are zero do not include the NM configuration
+        # if the configuration is not NM, get the index of the first non-zero element
         if len(np.nonzero(candidate_conf)[0]) > 0:
             first_nonzero_index = np.nonzero(candidate_conf)[0][0]
 
@@ -253,9 +253,9 @@ for conf in product(*wyckoff_magmoms):
             if candidate_conf[first_nonzero_index] < 0:
                 candidate_conf = [-item for item in candidate_conf]
 
-            # add to list of configurations for the current settings
-            if candidate_conf not in configurations[0]:
-                configurations[0].append(candidate_conf)
+        # add to list of configurations for the current settings
+        if candidate_conf not in configurations[0]:
+            configurations[0].append(candidate_conf)
 
 # split all possible combinations of Wyckoff positions
 splits = []
