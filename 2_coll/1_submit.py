@@ -301,11 +301,11 @@ for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, con
     for conf in confs:
         conf_array = np.array(conf)
         with open(f'configurations{i + 1:03d}.txt', 'a') as f:
-            if min(conf) >= 0:
+            if np.sum(np.abs(conf)) == 0:
+                state = 'nm'
+            elif min(conf) >= 0:
                 state = 'fm' + str(fm_count)
                 fm_count += 1
-            elif np.sum(np.abs(conf)) == 0:
-                state = 'nm'
             elif np.sum(conf) == 0:
                 state = 'afm' + str(afm_count)
                 afm_count += 1
