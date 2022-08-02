@@ -226,8 +226,8 @@ for i, (X, Y, kept_magmoms_chunk, bar_labels_chunk) in \
     rects.sort(key=lambda x: x.get_x())
     for bar_label, rect in zip(bar_labels_chunk, rects):
         height = rect.get_height()
-        ax.text(rect.get_x() + rect.get_width() / 2, height + 0.9 * bottomlim, bar_label,
-                fontsize='small', ha='center', va='bottom', rotation='vertical')
+        ax.text(rect.get_x() + rect.get_width() / 2, height + 0.85 * bottomlim, bar_label,
+                fontsize='medium', ha='center', va='bottom', rotation='vertical')
 
     # label axes
     plt.xlabel('configurations')
