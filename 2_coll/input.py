@@ -1,14 +1,14 @@
 # name of the poscar file to use in the automag/geometries folder
-poscar_file = 'Fe2O3-alpha_primitive.vasp'
+poscar_file = 'Ca3MnCoO6_primitive.vasp'
 
 # maximum supercell size for generating distinct magnetic configurations
 supercell_size = 1
 
-# choose the absolute value given to up and down spins
-high_spin_value = 5
-
-# if included all Wyckoff positions could be either HS or LS
-# low_spin_value = 1
+# choose the absolute values given to up and down spins
+spin_values = {
+    'Mn': [5],
+    'Co': [3],
+}
 
 # define the VASP parameters
 params = {
@@ -28,9 +28,9 @@ params = {
     'isym': 0,
     'ldau': True,
     'ldautype': 2,
-    'ldaul': [2, -1],
-    'ldauu': [3.51, 0],
-    'ldauj': [0, 0, 0],
+    'ldaul': [-1, 2, 2, -1],
+    'ldauu': [0, 6.64, 6.76, 0],
+    'ldauj': [0, 0, 0, 0],
     'ldauprint': 2,
 }
 

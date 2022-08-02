@@ -206,26 +206,36 @@ for multiplicity, wyckoff in zip(multiplicities, symmetrized_structure.equivalen
     if wyckoff[0].specie.is_magnetic:
         wyckoff_magmoms.append([1, 0, -1])
 
-        if 'low_spin_value' in globals():
+        if len(spin_values[wyckoff[0].specie.name]) == 2:
+            val1 = spin_values[wyckoff[0].specie.name][0]
+            val2 = spin_values[wyckoff[0].specie.name][1]
+
             if len(equivalent_multipliers) == 0:
-                equivalent_multipliers.append(np.repeat(high_spin_value, multiplicity))
-                equivalent_multipliers.append(np.repeat(low_spin_value, multiplicity))
+                equivalent_multipliers.append(np.repeat(val1, multiplicity))
+                equivalent_multipliers.append(np.repeat(val2, multiplicity))
             else:
                 new_equivalent_multipliers = []
                 for multiplier in equivalent_multipliers:
-                    new_equivalent_multipliers.append(np.append(multiplier, np.repeat(high_spin_value, multiplicity)))
-                    new_equivalent_multipliers.append(np.append(multiplier, np.repeat(low_spin_value, multiplicity)))
+                    new_equivalent_multipliers.append(np.append(multiplier, np.repeat(val1, multiplicity)))
+                    new_equivalent_multipliers.append(np.append(multiplier, np.repeat(val2, multiplicity)))
 
                 equivalent_multipliers = new_equivalent_multipliers
+
+        elif len(spin_values[wyckoff[0].specie.name]) == 1:
+            val1 = spin_values[wyckoff[0].specie.name][0]
+
+            if len(equivalent_multipliers) == 0:
+                equivalent_multipliers.append(np.repeat(val1, multiplicity))
+            else:
+                new_equivalent_multipliers = []
+                for multiplier in equivalent_multipliers:
+                    new_equivalent_multipliers.append(np.append(multiplier, np.repeat(val1, multiplicity)))
+
+                equivalent_multipliers = new_equivalent_multipliers
+
         else:
-            if len(equivalent_multipliers) == 0:
-                equivalent_multipliers.append(np.repeat(high_spin_value, multiplicity))
-            else:
-                new_equivalent_multipliers = []
-                for multiplier in equivalent_multipliers:
-                    new_equivalent_multipliers.append(np.append(multiplier, np.repeat(high_spin_value, multiplicity)))
+            raise ValueError('Max 2 spin values for each magnetic species.')
 
-                equivalent_multipliers = new_equivalent_multipliers
     else:
         wyckoff_magmoms.append([0])
 
