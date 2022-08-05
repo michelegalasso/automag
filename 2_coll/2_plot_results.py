@@ -167,13 +167,21 @@ while setting < max_setting:
         final_min = min(current_energies)
     setting += 1
 
+# filter out configurations containing NM states
+tc_states = []
+tc_energies = []
+for state, energy in zip(final_states, final_energies):
+    if 0 not in state:
+        tc_states.append(state)
+        tc_energies.append(energy)
+
 # write states to file
 with open(f'states{final_setting:03d}.txt', 'wt') as f:
-    json.dump(final_states, f)
+    json.dump(tc_states, f)
 
 # write energies to file
 with open(f'energies{final_setting:03d}.txt', 'wt') as f:
-    json.dump(final_energies, f)
+    json.dump(tc_energies, f)
 
 # copy setting file with geometry
 shutil.copy(f'trials/setting{final_setting:03d}.vasp', '.')
