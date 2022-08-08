@@ -177,13 +177,10 @@ symmetrized_structure = analyzer.get_symmetrized_structure()
 
 # find out which atoms are magnetic
 for element in structure.composition.elements:
-    if 'magnetic_atoms' not in globals():
-        element.is_magnetic = element.is_transition_metal
+    if element.name in spin_values:
+        element.is_magnetic = True
     else:
-        if element.name in magnetic_atoms:
-            element.is_magnetic = True
-        else:
-            element.is_magnetic = False
+        element.is_magnetic = False
 
 if os.path.exists('trials'):
     print('Cannot create a folder named trials: an object with the same name already exists.')

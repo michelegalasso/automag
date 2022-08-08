@@ -33,8 +33,5 @@ params = {
     'ldauprint': 2,
 }
 
-# choose the atomic types to be considered magnetic (default transition metals)
-# magnetic_atoms = ['Mn']
-
 # specify a cutoff for picking only high-spin configurations from output
 # lower_cutoff = 1.7
