@@ -13,6 +13,7 @@ import os
 import json
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
 from pymatgen.core.structure import Structure
 
@@ -87,6 +88,21 @@ energies_control = energies[index:]
 A = system(configurations_fit)
 values = np.linalg.lstsq(A, energies_fit, rcond=None)
 
+# DEBUG
+# all_states = [[1]]
+# for _ in range(structure.num_sites - 1):
+#     new = []
+#     for item in all_states:
+#         new.append(item + [1])
+#         new.append(item + [-1])
+#     all_states = new
+#
+# tmp = system(all_states)
+# pred = tmp @ values[0]
+# pred -= min(pred)
+# pred *= 1000      go to meV/unit cell
+# pred /= 40        go to meV/atom
+
 B = system(configurations_control)
 predictions = B @ values[0]
 PCC = np.corrcoef(predictions, energies_control)
@@ -112,6 +128,9 @@ if np.linalg.matrix_rank(A) == len(unique_distances) + 1:
             f.write(f'\ncoupling_constants = {np.array2string(coupling_constants, precision=8, separator=", ")}\n')
 
     plt.scatter(predictions, energies_control, label=f'PCC: {PCC[0, 1]:.2f}')
+    ax = plt.gca()
+    ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
+    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
     plt.legend()
     # plt.show()
     plt.savefig('model.png', bbox_inches='tight')

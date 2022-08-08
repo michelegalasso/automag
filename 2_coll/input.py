@@ -1,13 +1,12 @@
 # name of the poscar file to use in the automag/geometries folder
-poscar_file = 'Ca3MnCoO6_primitive.vasp'
+poscar_file = 'Ni3TeO6_setting005_1x2x1.vasp'
 
 # maximum supercell size for generating distinct magnetic configurations
 supercell_size = 1
 
 # choose the absolute values given to up and down spins
 spin_values = {
-    'Mn': [5],
-    'Co': [3],
+    'Ni': [2],
 }
 
 # define the VASP parameters
@@ -16,7 +15,7 @@ params = {
     'setups': 'recommended',
     'prec': 'Accurate',
     'ncore': 4,
-    'encut': 820,
+    'encut': 830,
     'ediff': 1e-6,
     'ismear': 1,
     'sigma': 0.1,
@@ -28,9 +27,9 @@ params = {
     'isym': 0,
     'ldau': True,
     'ldautype': 2,
-    'ldaul': [-1, 2, 2, -1],
-    'ldauu': [0, 6.64, 6.76, 0],
-    'ldauj': [0, 0, 0, 0],
+    'ldaul': [2, -1, -1],
+    'ldauu': [5.17, 0, 0],
+    'ldauj': [0, 0, 0],
     'ldauprint': 2,
 }
 
