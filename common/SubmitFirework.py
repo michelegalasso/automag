@@ -52,7 +52,7 @@ class SubmitFirework(object):
             assert dummy_atom is not None
             assert dummy_position is not None
             self.var_params = []
-        elif mode in ['relax', 'singlepoint']:
+        elif mode == 'singlepoint':
             assert encut_values is None
             assert sigma_values is None
             assert kpts_values is None
@@ -117,53 +117,32 @@ class SubmitFirework(object):
         # here we will collect all fireworks of our workflow
         fireworks = []
 
-        if self.mode == 'relax':
-            relax_firetask = VaspCalculationTask(
-                calc_params=params,
-                encode=encode,
-                magmoms=self.magmoms,
-            )
-            relax_firework = Firework(
-                [relax_firetask],
-                name='relax',
-                spec={'_pass_job_info': True},
-                fw_id=0
-            )
-            fireworks.append([relax_firework])
-
-            energy_params = {}
-            for key, value in params.items():
-                if key not in ['ediffg', 'ibrion', 'isif', 'nsw', 'potim', 'ismear', 'sigma']:
-                    energy_params[key] = value
-            energy_params['ismear'] = -5
-            energy_params['sigma'] = 0.05
-            energy_params['nelm'] = 200
-
-            # calculate energy
-            if self.magmoms.any():
-                sp_firetask = VaspCalculationTask(
-                    calc_params=energy_params,
-                    magmoms='previous',
-                )
-            else:
-                sp_firetask = VaspCalculationTask(
-                    calc_params=energy_params,
-                    magmoms=self.magmoms,
-                )
-        else:
-            sp_firetask = VaspCalculationTask(
-                calc_params=params,
-                encode=encode,
-                magmoms=self.magmoms,
-            )
-
+        # single-point run
+        sp_firetask = VaspCalculationTask(
+            calc_params=params,
+            encode=encode,
+            magmoms=self.magmoms,
+        )
         sp_firework = Firework(
             [sp_firetask],
             name='singlepoint',
             spec={'_pass_job_info': True},
-            fw_id=1,
+            fw_id=0
         )
         fireworks.append([sp_firework])
+
+        # recalc run with magmoms from previous run
+        recalc_firetask = VaspCalculationTask(
+            calc_params=params,
+            magmoms='previous',
+        )
+        recalc_firework = Firework(
+            [recalc_firetask],
+            name='recalc',
+            spec={'_pass_job_info': True},
+            fw_id=1,
+        )
+        fireworks.append([recalc_firework])
 
         if self.mode == 'perturbations':
             next_id = 2
