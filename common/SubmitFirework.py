@@ -117,32 +117,47 @@ class SubmitFirework(object):
         # here we will collect all fireworks of our workflow
         fireworks = []
 
-        # single-point run
-        sp_firetask = VaspCalculationTask(
-            calc_params=params,
-            encode=encode,
-            magmoms=self.magmoms,
-        )
-        sp_firework = Firework(
-            [sp_firetask],
-            name='singlepoint',
-            spec={'_pass_job_info': True},
-            fw_id=0
-        )
-        fireworks.append([sp_firework])
+        if name == 'nm':
+            # single-point run
+            sp_firetask = VaspCalculationTask(
+                calc_params=params,
+                encode=encode,
+                magmoms=self.magmoms,
+            )
+            sp_firework = Firework(
+                [sp_firetask],
+                name='singlepoint',
+                spec={'_pass_job_info': True},
+                fw_id=1
+            )
+            fireworks.append([sp_firework])
+        else:
+            # single-point run
+            sp_firetask = VaspCalculationTask(
+                calc_params=params,
+                encode=encode,
+                magmoms=self.magmoms,
+            )
+            sp_firework = Firework(
+                [sp_firetask],
+                name='singlepoint',
+                spec={'_pass_job_info': True},
+                fw_id=0
+            )
+            fireworks.append([sp_firework])
 
-        # recalc run with magmoms from previous run
-        recalc_firetask = VaspCalculationTask(
-            calc_params=params,
-            magmoms='previous',
-        )
-        recalc_firework = Firework(
-            [recalc_firetask],
-            name='recalc',
-            spec={'_pass_job_info': True},
-            fw_id=1,
-        )
-        fireworks.append([recalc_firework])
+            # recalc run with magmoms from previous run
+            recalc_firetask = VaspCalculationTask(
+                calc_params=params,
+                magmoms='previous',
+            )
+            recalc_firework = Firework(
+                [recalc_firetask],
+                name='recalc',
+                spec={'_pass_job_info': True},
+                fw_id=1,
+            )
+            fireworks.append([recalc_firework])
 
         if self.mode == 'perturbations':
             next_id = 2
