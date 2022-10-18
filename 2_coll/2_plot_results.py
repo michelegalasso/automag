@@ -231,7 +231,7 @@ for i, (X, Y, kept_magmoms_chunk, bar_labels_chunk) in \
     # label bars
     ax = plt.gca()
     rects = ax.patches
-    rects.sort(key=lambda x: x.get_x())
+    rects = sorted(rects, key=lambda x: x.get_x())
     for bar_label, rect in zip(bar_labels_chunk, rects):
         height = rect.get_height()
         ax.text(rect.get_x() + rect.get_width() / 2, height + 0.85 * bottomlim, bar_label,
