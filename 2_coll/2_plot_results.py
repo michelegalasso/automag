@@ -91,7 +91,7 @@ for line, maginfo in zip(lines, maginfos):
     values = line.split()
     init_state = values[0]
 
-    if values[2].split('=')[1] == 'NONCONVERGED':
+    if values[-4].split('=')[1] == 'NONCONVERGED':
         not_converged.append(init_state)
         del data[init_state]
     else:
