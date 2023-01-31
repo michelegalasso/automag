@@ -233,7 +233,10 @@ class WriteChargesTask(FiretaskBase):
         with open(os.path.join(job_info_array[-1]['launch_dir'], 'POSCAR'), 'rt') as f:
             poscar_lines = f.readlines()
         elem_list = poscar_lines[0].split()
-        num_ions = [int(item) for item in poscar_lines[5].split()]
+        try:
+            num_ions = [int(item) for item in poscar_lines[5].split()]
+        except ValueError:
+            num_ions = [int(item) for item in poscar_lines[6].split()]
 
         dummy_index = 0
         for elem, amount in zip(elem_list, num_ions):
