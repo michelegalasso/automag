@@ -1,8 +1,8 @@
 """
-automag.common.calculation
+automag.common.calculators
 ==========================
 
-Classes and functions to efficiently handle FireWorks calculations.
+External codes are handled as calculators.
 """
 import os
 import shutil
@@ -19,12 +19,8 @@ class VASPCalculator(object):
             specific (str): path to the Specific folder with jobscript and VASP input files
         """
         self.specific = specific
-        self.username = getpass.getuser()
 
-    def conv_test(self):
-        pass
-
-    def submit(self, parameters: dict, calcfold: str):
+    def prepare(self, parameters: dict, calcfold: str):
         """
         Submits VASP calculation.
 
@@ -33,7 +29,7 @@ class VASPCalculator(object):
             calcfold (str): path to the calculation folder (will be created if it does not exist)
 
         Returns:
-            str: job id of the submitted calculation
+            None
         """
         # create calcfold if it does not exist
         if not os.path.isdir(calcfold):
@@ -55,25 +51,3 @@ class VASPCalculator(object):
 
         if os.path.isfile(os.path.join(self.specific, 'KPOINTS')):
             shutil.copy(os.path.join(self.specific, 'KPOINTS'), calcfold)
-
-        sp = subprocess.run(['sbatch', 'jobscript'], cwd=calcfold, capture_output=True, encoding='utf-8')
-        job_id = sp.stdout.split()[-1]
-
-        return job_id
-
-    def has_completed(self, job_id: str):
-        """
-        Checks if a certain calculation has completed.
-
-        Args:
-            job_id: calculation job id
-
-        Returns:
-            bool: True if completed, false otherwise
-        """
-        sp = subprocess.run(['squeue', '-u', self.username], capture_output=True, encoding='utf-8')
-        for line in sp.stdout.split('\n'):
-            if job_id in line:
-                return False
-
-        return True
