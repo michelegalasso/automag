@@ -7,48 +7,32 @@ Script which submits convergence tests.
 .. codeauthor:: Michele Galasso <m.galasso@yandex.com>
 """
 
-from input import *
+import os
+import shutil
+import subprocess
 
-from pymatgen.core.structure import Structure
 
-from common.SubmitFirework import SubmitFirework
+# ENCUT values
+encut_values = range(300, 800, 50)
 
-# full path to poscar file
-path_to_poscar = '../geometries/' + poscar_file
+# root dir for the convergence test
+calc_dir = "/public/home/ac4fa6jhhb/michele/Tb4H23/1_conv_tests/encut"
 
-# magnetic configuration to use for the convergence test
-if 'configuration' not in globals():
-    configuration = []
-    structure = Structure.from_file(path_to_poscar)
-    for atom in structure.species:
-        if 'magnetic_atoms' not in globals():
-            if atom.is_transition_metal:
-                configuration.append(4.0)
-            else:
-                configuration.append(0.0)
-        else:
-            if atom in magnetic_atoms:
-                configuration.append(4.0)
-            else:
-                configuration.append(0.0)
+# consistency check
+assert os.path.exists(calc_dir)
+assert os.path.exists(os.path.join(calc_dir, "raw_input"))
+for filename in ["INCAR", "POSCAR", "POTCAR", "KPOINTS", "jobscript.sh"]:
+    assert os.path.exists(os.path.join(calc_dir, "raw_input", filename))
 
-# convergence test w.r.t. encut
-if mode == 'encut':
-    if 'encut_values' not in globals():
-        encut_values = range(500, 1010, 10)
+for encut in encut_values:
+    os.mkdir(os.path.join(calc_dir, str(encut)))
+    for filename in ["INCAR", "POSCAR", "POTCAR", "KPOINTS", "jobscript.sh"]:
+        shutil.copy(os.path.join(calc_dir, "raw_input", filename), os.path.join(calc_dir, str(encut)))
 
-    convtest = SubmitFirework(path_to_poscar, mode='encut', fix_params=params, magmoms=configuration,
-                              encut_values=encut_values)
-    convtest.submit()
+    # append ENCUT to INCAR
+    with open(os.path.join(calc_dir, str(encut), "INCAR"), "a") as f:
+        f.write("\n\n")
+        f.write("# Added by Automag\n")
+        f.write("ENCUT = " + str(encut) + "\n")
 
-# convergence test w.r.t. sigma and kpts
-if mode == 'kgrid':
-    if 'sigma_values' not in globals():
-        sigma_values = [item / 100 for item in range(5, 25, 5)]
-
-    if 'kpts_values' not in globals():
-        kpts_values = range(20, 110, 10)
-
-    convtest = SubmitFirework(path_to_poscar, mode='kgrid', fix_params=params, magmoms=configuration,
-                              sigma_values=sigma_values, kpts_values=kpts_values)
-    convtest.submit()
+    subprocess.run(["sbatch jobscript.sh"])
