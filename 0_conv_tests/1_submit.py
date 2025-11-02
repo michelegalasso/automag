@@ -25,6 +25,9 @@ for filename in ["INCAR", "POSCAR", "POTCAR", "KPOINTS", "jobscript.sh"]:
     assert os.path.exists(os.path.join(calc_dir, "raw_input", filename))
 
 for encut in encut_values:
+    if os.path.exists(os.path.join(calc_dir, str(encut))):
+        shutil.rmtree(os.path.join(calc_dir, str(encut)))
+
     os.mkdir(os.path.join(calc_dir, str(encut)))
     for filename in ["INCAR", "POSCAR", "POTCAR", "KPOINTS", "jobscript.sh"]:
         shutil.copy(os.path.join(calc_dir, "raw_input", filename), os.path.join(calc_dir, str(encut)))
@@ -35,4 +38,5 @@ for encut in encut_values:
         f.write("# Added by Automag\n")
         f.write("ENCUT = " + str(encut) + "\n")
 
-    subprocess.run(["sbatch jobscript.sh"])
+    os.chdir(os.path.join(calc_dir, str(encut)))
+    subprocess.run(["sbatch", "jobscript.sh"])
