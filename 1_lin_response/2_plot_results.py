@@ -8,38 +8,86 @@ Script which plots results of linear response U calculation.
 """
 
 import os
-import numpy as np
+import matplotlib
+
 import matplotlib.pyplot as plt
+import numpy as np
 
-from scipy import stats
+# matplotlib backend and font size
+matplotlib.use("TkAgg")
+plt.rcParams.update({"font.size": 14})
 
-# increase matplotlib pyplot font size
-plt.rcParams.update({'font.size': 20})
+def read_charge_from_outcar(filename):
+    # initialization
+    result = None
 
-calcfold = os.path.join(os.environ.get('AUTOMAG_PATH'), 'CalcFold')
-data = np.loadtxt(os.path.join(calcfold, 'charges.txt'))
+    # read charge on 1st atom
+    flag = False
+    with (open(filename) as f):
+        for line in f:
+            if "aborting loop because EDIFF is reached" in line:
+                flag = True
+            if flag and len(line.split()) != 0 and line.split()[0] == "1":
+                result = float(line.split()[-2])
+                break
 
-perturbations = data[:, 0]
-nscf = data[:, 1]
-scf = data[:, 2]
+    # check that the energy value has been read
+    assert result is not None
 
-plt.figure(figsize=(16, 9))
+    # return energy value
+    return result
 
-slope_nscf, intercept_nscf, r_value_nscf, p_value_nscf, std_err_nscf = stats.linregress(perturbations, nscf)
-slope_scf, intercept_scf, r_value_scf, p_value_scf, std_err_scf = stats.linregress(perturbations, scf)
 
-print(f'U = {(1/slope_scf) - (1/slope_nscf):4.2f}')
+### START OF INPUT PART ###
 
-plt.plot(perturbations, nscf, 'ro', label=f'NSCF (slope {slope_nscf:.4f})')
-plt.plot(perturbations, scf, 'bo', label=f'SCF (slope {slope_scf:.4f})')
+# root dir for the convergence test
+calc_dir = "/home/michele/EXCHANGE/Tb4H23/2_hubbard_u"
 
-nscf_line = [value * slope_nscf + intercept_nscf for value in perturbations]
-scf_line = [value * slope_scf + intercept_scf for value in perturbations]
-plt.plot(perturbations, nscf_line, 'r-')
-plt.plot(perturbations, scf_line, 'b-')
+### END OF INPUT PART ###
 
-plt.xlabel('α (eV)')
-plt.ylabel('d-electrons on first Fe site')
+# initialization
+perturbations = []
+
+for dir_name in os.listdir(os.path.join(calc_dir, "nscf")):
+    # get perturbation value
+    perturbation = float(dir_name.replace("m", "-").replace("p", "."))
+    perturbations.append(perturbation)
+
+# initialization
+nscf_responses = np.empty_like(perturbations)
+scf_responses = np.empty_like(perturbations)
+
+for step in ["nscf", "scf"]:
+    for dir_name in os.listdir(os.path.join(calc_dir, step)):
+        perturbation = float(dir_name.replace("m", "-").replace("p", "."))
+        response = read_charge_from_outcar(os.path.join(calc_dir, step, dir_name, "OUTCAR"))
+        index = perturbations.index(perturbation)
+
+        if step == "nscf":
+            nscf_responses[index] = response
+        else:
+            scf_responses[index] = response
+
+# append response for zero perturbation
+response = read_charge_from_outcar(os.path.join(calc_dir, "groundstate", "OUTCAR"))
+perturbations = np.array(perturbations)
+perturbations = np.append(perturbations, [0.0])
+nscf_responses = np.append(nscf_responses, [response])
+scf_responses = np.append(scf_responses, [response])
+
+# create figure
+plt.figure()
+
+# plot
+indices = np.argsort(perturbations)
+plt.plot(perturbations[indices], nscf_responses[indices], marker = ".", label="nscf")
+plt.plot(perturbations[indices], scf_responses[indices], marker = ".", label="scf")
+
+# labels and legend
+plt.xlabel('V [eV]')
+plt.ylabel('Number of f-electrons')
 plt.legend()
-# plt.show()
-plt.savefig('Ucalc.png', bbox_inches='tight')
+plt.grid(True)
+# plt.savefig("UCALC.png", bbox_inches="tight")
+plt.tight_layout()
+plt.show()

@@ -21,7 +21,7 @@ calc_dir = "/public/home/ac4fa6jhhb/michele/Tb4H23/2_hubbard_u"
 mode = "scf"
 
 # define the perturbations in eV to apply to the dummy atom (ignored in "groundstate" mode)
-perturbations = [-0.2, -0.15, -0.1, 0.1, 0.15, 0.2]
+perturbations = [-0.08, -0.05, -0.02, 0.02, 0.05, 0.08]
 
 ### END OF INPUT PART ###
 
