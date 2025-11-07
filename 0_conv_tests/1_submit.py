@@ -81,8 +81,7 @@ else:
 
             # append SIGMA to INCAR
             with open(os.path.join(calc_dir, dir_name, "INCAR"), "a") as f:
-                f.write("\n\n")
-                f.write("# Added by Automag\n")
+                f.write("\n\n# Added by Automag\n")
                 f.write("SIGMA = " + str(sigma) + "\n")
 
             # create KPOINTS file
