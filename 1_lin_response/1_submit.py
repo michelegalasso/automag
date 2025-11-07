@@ -97,7 +97,7 @@ else:
             f.write(f"LDAUJ = {perturbation} 0.0 0.0\n")
 
         # copy CHGCAR and WAVECAR from the ground state
-        shutil.copy(os.path.join(calc_dir, "groundstate", "WAVECAR"), os.path.join(calc_dir, "scf", dir_name))
+        shutil.copy(os.path.join(calc_dir, "nscf", dir_name, "WAVECAR"), os.path.join(calc_dir, "scf", dir_name))
 
         os.chdir(os.path.join(calc_dir, "scf", dir_name))
         subprocess.run(["sbatch", "jobscript.sh"])
