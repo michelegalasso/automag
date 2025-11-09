@@ -13,6 +13,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
+from numpy.polynomial import Polynomial
+
+
 # matplotlib backend and font size
 matplotlib.use("TkAgg")
 plt.rcParams.update({"font.size": 14})
@@ -68,9 +71,10 @@ for step in ["nscf", "scf"]:
         else:
             scf_responses[index] = response
 
-# append response for zero perturbation
 response = read_charge_from_outcar(os.path.join(calc_dir, "groundstate", "OUTCAR"))
 perturbations = np.array(perturbations)
+
+# append response for zero perturbation
 perturbations = np.append(perturbations, [0.0])
 nscf_responses = np.append(nscf_responses, [response])
 scf_responses = np.append(scf_responses, [response])
@@ -78,10 +82,20 @@ scf_responses = np.append(scf_responses, [response])
 # create figure
 plt.figure()
 
-# plot
+# get indices
 indices = np.argsort(perturbations)
+
+# compute angular coefficients
+p_nscf = Polynomial.fit(perturbations[indices], nscf_responses[indices], 1)
+p_scf = Polynomial.fit(perturbations[indices], scf_responses[indices], 1)
+q_nscf, m_nscf = p_nscf.convert()
+q_scf, m_scf = p_scf.convert()
+
+# plot
 plt.plot(perturbations[indices], nscf_responses[indices], marker = ".", label="nscf")
+plt.plot(perturbations[indices], perturbations[indices] * m_nscf + q_nscf, label="nscf interp")
 plt.plot(perturbations[indices], scf_responses[indices], marker = ".", label="scf")
+plt.plot(perturbations[indices], perturbations[indices] * m_scf + q_scf, label="scf interp")
 
 # labels and legend
 plt.xlabel('V [eV]')
@@ -91,3 +105,6 @@ plt.grid(True)
 # plt.savefig("UCALC.png", bbox_inches="tight")
 plt.tight_layout()
 plt.show()
+
+# print result
+print(f"U = 1/{m_scf:.4f} - 1/{m_nscf:.4f} = {1/m_scf - 1/m_nscf:.1f}")

@@ -42,7 +42,7 @@ def read_energy_from_outcar(filename):
 mode = "kgrid"
 
 # root dir for the convergence test
-calc_dir = "/home/michele/EXCHANGE/Tb4H23/1_conv_tests/kgrid"
+calc_dir = "/home/michele/EXCHANGE/Sm4H23/1_conv_tests/kgrid"
 
 ### END OF INPUT PART ###
 
@@ -142,6 +142,6 @@ else:
     plt.ylabel('Energy [eV/atom]')
     plt.legend(title='Sigma')
     plt.grid(True)
-    plt.savefig("KGRID.png", bbox_inches="tight")
-    # plt.tight_layout()
-    # plt.show()
+    # plt.savefig("KGRID.png", bbox_inches="tight")
+    plt.tight_layout()
+    plt.show()

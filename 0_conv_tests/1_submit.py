@@ -25,10 +25,12 @@ kpoints_values = [
     [2, 2, 2],
     [3, 3, 3],
     [4, 4, 4],
+    [5, 5, 5],
+    [6, 6, 6],
 ]
 
 # sigma values (ignored in encut mode)
-sigma_values = [0.005, 0.010, 0.020]
+sigma_values = [0.05, 0.10, 0.15, 0.20]
 
 # root dir for the convergence test
 # encut mode: it must contain a raw_input folder with INCAR (without ENCUT), POSCAR, POTCAR, KPOINTS and jobscript.sh
