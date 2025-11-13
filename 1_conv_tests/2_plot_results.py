@@ -1,12 +1,3 @@
-"""
-automag.0_conv_tests.2_plot_results
-===================================
-
-Script which plots results of convergence tests.
-
-.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
-"""
-
 import os
 import matplotlib
 

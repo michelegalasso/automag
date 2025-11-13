@@ -1,12 +1,3 @@
-"""
-automag.1_lin_response.1_submit
-===============================
-
-Script which submits linear response U calculations.
-
-.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
-"""
-
 import os
 import shutil
 import subprocess

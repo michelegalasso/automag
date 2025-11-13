@@ -1,12 +1,3 @@
-"""
-automag.0_conv_tests.1_submit
-=============================
-
-Script which submits convergence tests.
-
-.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
-"""
-
 import os
 import shutil
 import subprocess

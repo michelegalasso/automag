@@ -1,12 +1,3 @@
-"""
-automag.1_lin_response.2_plot_results
-=====================================
-
-Script which plots results of linear response U calculation.
-
-.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
-"""
-
 import os
 import matplotlib
 

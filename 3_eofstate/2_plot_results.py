@@ -1,19 +1,7 @@
-"""
-automag.2_eofstate.2_plot_results
-===================================
-
-Script which plots results of convergence tests.
-
-.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
-"""
-
-# still to be modified..
-
 import os
 import matplotlib
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 from ase.io import read
 
