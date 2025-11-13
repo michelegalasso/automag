@@ -44,7 +44,7 @@ def read_charge_from_outcar(filename):
 ### START OF INPUT PART ###
 
 # root dir for the convergence test
-calc_dir = "/home/michele/EXCHANGE/Tb4H23/2_hubbard_u"
+calc_dir = "/home/michele/EXCHANGE/Sm4H23/2_hubbard_u"
 
 ### END OF INPUT PART ###
 

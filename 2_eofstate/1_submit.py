@@ -15,7 +15,7 @@ import subprocess
 ### START OF INPUT PART ###
 
 # pressure values in GPa
-pressure_values = range(300, 800, 50)
+pressure_values = range(100, 220, 20)
 
 # root dir: it must contain a raw_input folder with INCAR (without ENCUT), POSCAR, POTCAR, KPOINTS and jobscript.sh
 calc_dir = "/public/home/ac4fa6jhhb/michele/Tb4H23/3_eofstate"
