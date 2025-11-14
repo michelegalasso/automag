@@ -1,16 +1,8 @@
-"""
-automag.2_coll.1_submit
-=======================
-
-Script which runs enumlib and submits calculations.
-
-.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
-"""
-
-from input import *
-
 import os
+import shutil
 import subprocess
+import warnings
+
 import numpy as np
 
 from itertools import product
@@ -18,8 +10,38 @@ from pymatgen.io.vasp import Poscar
 from pymatgen.core.structure import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
-from common.SubmitFirework import SubmitFirework
 
+### START OF INPUT PART ###
+
+# the maximum supercell size for generating distinct magnetic configurations
+supercell_size = 1
+
+# the absolute values given to up and down magnetic moments
+abs_magmom_values = {
+    'Sm': [5],
+}
+
+# choose collinear or non-collinear calculations
+collinear = False
+
+# root dir: it must contain a raw_input folder with INCAR (without ENCUT), POSCAR, POTCAR, KPOINTS and jobscript.sh
+calc_dir = "/home/michele/EXCHANGE/Sm4H23/4_configurations"
+
+### END OF INPUT PART ###
+
+# ignore warnings
+warnings.filterwarnings("ignore")
+
+# consistency check
+files_to_copy = ["INCAR", "POSCAR", "POTCAR", "KPOINTS", "jobscript.sh"]
+
+assert os.path.exists(calc_dir)
+assert os.path.exists(os.path.join(calc_dir, "raw_input"))
+for filename in files_to_copy:
+    assert os.path.exists(os.path.join(calc_dir, "raw_input", filename))
+
+# full path to POSCAR file
+path_to_poscar = os.path.join(calc_dir, "raw_input", "POSCAR")
 
 def launch_enumlib(count, split):
     os.mkdir(f'enumlib{count}')
@@ -167,17 +189,14 @@ def launch_enumlib(count, split):
     os.chdir('..')
 
 
-# full path to poscar file
-path_to_poscar = '../geometries/' + poscar_file
-
 # create Structure and SymmetrizedStructure objects
 structure = Structure.from_file(path_to_poscar)
-analyzer = SpacegroupAnalyzer(structure)
+analyzer = SpacegroupAnalyzer(structure, symprec=0.2)
 symmetrized_structure = analyzer.get_symmetrized_structure()
 
 # find out which atoms are magnetic
 for element in structure.composition.elements:
-    if element.name in spin_values:
+    if element.name in abs_magmom_values:
         element.is_magnetic = True
     else:
         element.is_magnetic = False
@@ -203,9 +222,9 @@ for multiplicity, wyckoff in zip(multiplicities, symmetrized_structure.equivalen
     if wyckoff[0].specie.is_magnetic:
         wyckoff_magmoms.append([1, 0, -1])
 
-        if len(spin_values[wyckoff[0].specie.name]) == 2:
-            val1 = spin_values[wyckoff[0].specie.name][0]
-            val2 = spin_values[wyckoff[0].specie.name][1]
+        if len(abs_magmom_values[wyckoff[0].specie.name]) == 2:
+            val1 = abs_magmom_values[wyckoff[0].specie.name][0]
+            val2 = abs_magmom_values[wyckoff[0].specie.name][1]
 
             if len(equivalent_multipliers) == 0:
                 equivalent_multipliers.append(np.repeat(val1, multiplicity))
@@ -218,8 +237,8 @@ for multiplicity, wyckoff in zip(multiplicities, symmetrized_structure.equivalen
 
                 equivalent_multipliers = new_equivalent_multipliers
 
-        elif len(spin_values[wyckoff[0].specie.name]) == 1:
-            val1 = spin_values[wyckoff[0].specie.name][0]
+        elif len(abs_magmom_values[wyckoff[0].specie.name]) == 1:
+            val1 = abs_magmom_values[wyckoff[0].specie.name][0]
 
             if len(equivalent_multipliers) == 0:
                 equivalent_multipliers.append(np.repeat(val1, multiplicity))
@@ -301,9 +320,9 @@ original_ch_symbols = [atom.name for atom in structure.species]
 for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, configurations)):
     magnification = len(frac_coords) // len(structure.frac_coords)
     ch_symbols = np.repeat(original_ch_symbols, magnification)
-    setting = Structure(lattice, ch_symbols, frac_coords)
-    setting.to(fmt='poscar', filename=f'setting{i + 1:03d}.vasp')
-    mask = [item.is_magnetic for item in setting.species]
+    settings = Structure(lattice, ch_symbols, frac_coords)
+    settings.to(fmt='poscar', filename=f'settings{i + 1:03d}.vasp')
+    mask = [item.is_magnetic for item in settings.species]
 
     for conf in confs:
         conf_array = np.array(conf)
@@ -324,6 +343,35 @@ for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, con
             f.write(' '.join(f'{e:2d}' for e in conf_array[mask]))
             f.write('\n')
 
-        run = SubmitFirework(f'setting{i + 1:03d}.vasp', mode='singlepoint', fix_params=params, magmoms=conf,
-                             name=state)
-        run.submit()
+        # submit calculation
+        os.mkdir(os.path.join(calc_dir, state))
+        for filename in files_to_copy:
+            shutil.copy(os.path.join(calc_dir, "raw_input", filename), os.path.join(calc_dir, state))
+
+        with open(os.path.join(calc_dir, state, "INCAR"), "a") as f:
+            f.write("\n\n")
+            f.write("# Added by Automag\n")
+            for j, magmom in enumerate(conf):
+                if collinear:
+                    if j == 0:
+                        f.write(f"MAGMOM = {magmom:4.1f}")
+                    else:
+                        f.write(f"  {magmom:4.1f}")
+
+                    # add a new line every 8 atoms
+                    if (j + 1) % 8 == 0:
+                        f.write("  \\\n       ")
+
+                else:
+                    if j == 0:
+                        f.write(f"MAGMOM = 0.0  0.0 {magmom:4.1f}")
+                    else:
+                        f.write(f"    0.0  0.0 {magmom:4.1f}")
+
+                    # add a new line every 8 atoms
+                    if (j + 1) % 8 == 0:
+                        f.write("  \\\n     ")
+
+            # add a new line if needed
+            if j % 8 != 0:
+                f.write("\n")
