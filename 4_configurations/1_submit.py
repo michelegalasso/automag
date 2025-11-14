@@ -343,11 +343,13 @@ for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, con
             f.write(' '.join(f'{e:2d}' for e in conf_array[mask]))
             f.write('\n')
 
-        # submit calculation
+        # prepare calculation
         os.mkdir(os.path.join(calc_dir, state))
         for filename in files_to_copy:
-            shutil.copy(os.path.join(calc_dir, "raw_input", filename), os.path.join(calc_dir, state))
+            if filename != "jobscript.sh":
+                shutil.copy(os.path.join(calc_dir, "raw_input", filename), os.path.join(calc_dir, state))
 
+        # add MAGMOM to INCAR
         with open(os.path.join(calc_dir, state, "INCAR"), "a") as f:
             f.write("\n\n")
             f.write("# Added by Automag\n")
@@ -375,3 +377,20 @@ for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, con
             # add a new line if needed
             if j % 8 != 0:
                 f.write("\n")
+
+        # add calculation name to jobscript.sh
+        jobscript_content = ""
+        with open(os.path.join(calc_dir, "raw_input", "jobscript.sh"), "r") as f:
+            for line in f:
+                if "#SBATCH -J" in line:
+                    base_name = line.split()[-1]
+                    new_line = f"#SBATCH -J {base_name}_{state}\n"
+                    jobscript_content += new_line
+                else:
+                    jobscript_content += line
+
+        with open(os.path.join(calc_dir, state, "jobscript.sh"), "w") as f:
+            f.write(jobscript_content)
+
+        os.chdir(os.path.join(calc_dir, state))
+        subprocess.run(["sbatch", "jobscript.sh"])
