@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import time
 import warnings
 
 import numpy as np
@@ -392,5 +393,5 @@ for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, con
         with open(os.path.join(calc_dir, state, "jobscript.sh"), "w") as f:
             f.write(jobscript_content)
 
-        os.chdir(os.path.join(calc_dir, state))
-        subprocess.run(["sbatch", "jobscript.sh"])
+        subprocess.run(["sbatch", "jobscript.sh"], cwd=os.path.join(calc_dir, state))
+        time.sleep(1)
