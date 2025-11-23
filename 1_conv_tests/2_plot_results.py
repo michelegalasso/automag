@@ -4,36 +4,21 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
+from ase.io import read
+
 
 # matplotlib backend and font size
 matplotlib.use("TkAgg")
 plt.rcParams.update({"font.size": 14})
 
 
-def read_energy_from_outcar(filename):
-    # initialization
-    result = None
-
-    # read energy (sigma -> 0)
-    with open(filename) as f:
-        for line in f:
-            if "energy  without entropy" in line:
-                result = float(line.split()[-1])
-
-    # check that the energy value has been read
-    assert result is not None
-
-    # return energy value
-    return result
-
-
 ### START OF INPUT PART ###
 
 # choose the desired mode: 'encut' or 'kgrid'
-mode = "kgrid"
+mode = "encut"
 
 # root dir for the convergence test
-calc_dir = "/home/michele/EXCHANGE/Sm4H23/1_conv_tests/kgrid"
+calc_dir = "/home/michele/EXCHANGE/collinear/Tb4H23/1_conv_tests/encut"
 
 ### END OF INPUT PART ###
 
@@ -46,30 +31,19 @@ if mode == "encut":
     energy_values = []
 
     for i, folder in enumerate(sorted(os.listdir(calc_dir))):
-        if i == 0:
-            # fetch number of atoms in the unit cell
-            with open(os.path.join(calc_dir, folder, "POSCAR"), "r") as f:
-                for j, line in enumerate(f):
-                    if j == 6:
-                        natoms_list = line.split()
-                        natoms = sum([int(item) for item in natoms_list])
+        if folder != "raw_input":
+            encut = float(folder)
+            atoms = read(os.path.join(calc_dir, folder, "OUTCAR"))
 
-        if folder == "raw_input":
-            continue
+            energy_atom = atoms.get_total_energy() / atoms.get_number_of_atoms()
 
-        encut = float(folder)
-        energy_atom = read_energy_from_outcar(os.path.join(calc_dir, folder, "OUTCAR")) / natoms
-
-        encut_values.append(encut)
-        energy_values.append(energy_atom)
-
-    # encut_values = np.array([300, 350, 400, 450, 500, 550, 600, 650, 700, 750])
-    # energy_values = np.array([-208.46069675, -208.78697811, -209.04029607, -209.16239793, -209.27367880, -209.33598966,
-    #                           -209.37279351, -209.38261711, -209.38414901, -209.38484983]) / 54
+            encut_values.append(encut)
+            energy_values.append(energy_atom)
 
     plt.plot(encut_values, energy_values, marker=".")
     plt.xlabel("ENCUT")
     plt.ylabel("Energy [eV/atom]")
+    plt.grid(True)
     # plt.savefig("ENCUT.png", bbox_inches="tight")
     plt.tight_layout()
     plt.show()
@@ -81,28 +55,19 @@ else:
     energy_values = []
 
     for i, folder in enumerate(sorted(os.listdir(calc_dir))):
-        if i == 0:
-            # fetch number of atoms in the unit cell
-            with open(os.path.join(calc_dir, folder, "POSCAR"), "r") as f:
-                for j, line in enumerate(f):
-                    if j == 6:
-                        natoms_list = line.split()
-                        natoms = sum([int(item) for item in natoms_list])
+        if folder != "raw_input":
+            kpoints_string, sigma_string = folder.split("_")
+            atoms = read(os.path.join(calc_dir, folder, "OUTCAR"))
 
-        if folder == "raw_input":
-            continue
+            kpoints_number = 1
+            for char in kpoints_string:
+                kpoints_number *= int(char)
 
-        kpoints_string, sigma_string = folder.split("_")
+            energy_atom = atoms.get_total_energy() / atoms.get_number_of_atoms()
 
-        kpoints_number = 1
-        for char in kpoints_string:
-            kpoints_number *= int(char)
-
-        energy_atom = read_energy_from_outcar(os.path.join(calc_dir, folder, "OUTCAR")) / natoms
-
-        kpoints_values.append(kpoints_number)
-        sigma_values.append(float("0." + sigma_string[1:]))
-        energy_values.append(energy_atom)
+            kpoints_values.append(kpoints_number)
+            sigma_values.append(float("0." + sigma_string[1:]))
+            energy_values.append(energy_atom)
 
     # go to numpy arrays
     kpoints = np.array(kpoints_values)
