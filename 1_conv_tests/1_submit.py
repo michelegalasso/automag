@@ -8,8 +8,10 @@ import subprocess
 # choose the desired mode: 'encut' or 'kgrid'
 mode = "encut"
 
-# ENCUT values (ignored in kgrid mode)
-encut_values = range(300, 800, 50)
+input_file_name = "pw.conv.in"
+
+# encut values (ignored in kgrid mode)
+encut_values = range(30, 80, 5)
 
 # kpoints values (ignored in encut mode)
 kpoints_values = [
@@ -30,16 +32,12 @@ calc_dir = "/public/home/ac4fa6jhhb/michele/Tb4H23/1_conv_tests/encut"
 
 ### END OF INPUT PART ###
 
-files_to_copy = ["INCAR", "POSCAR", "POTCAR", "jobscript.sh"]
-
-# consistency check
-if mode == "encut":
-    files_to_copy.append("KPOINTS")
+raw_input_files = [input_file_name, "jobscript.sh"]
 
 assert mode in ["encut", "kgrid"]
 assert os.path.exists(calc_dir)
 assert os.path.exists(os.path.join(calc_dir, "raw_input"))
-for filename in files_to_copy:
+for filename in raw_input_files:
     assert os.path.exists(os.path.join(calc_dir, "raw_input", filename))
 
 if mode == "encut":
@@ -49,14 +47,18 @@ if mode == "encut":
             shutil.rmtree(os.path.join(calc_dir, str(encut)))
 
         os.mkdir(os.path.join(calc_dir, str(encut)))
-        for filename in files_to_copy:
-            shutil.copy(os.path.join(calc_dir, "raw_input", filename), os.path.join(calc_dir, str(encut)))
+        shutil.copy(os.path.join(calc_dir, "raw_input", "jobscript.sh"), os.path.join(calc_dir, str(encut)))
 
-        # append ENCUT to INCAR
-        with open(os.path.join(calc_dir, str(encut), "INCAR"), "a") as f:
-            f.write("\n\n")
-            f.write("# Added by Automag\n")
-            f.write("ENCUT = " + str(encut) + "\n")
+        # add encut value to input file
+        with open(os.path.join(calc_dir, "raw_input", input_file_name), "r") as template_file:
+            with open(os.path.join(calc_dir, str(encut), input_file_name), "w") as current_file:
+                for line in template_file:
+                    if "!encutwfc" in line:
+                        leading_spaces = line.split("!")[0]
+                        new_line = leading_spaces + f"encutwfc = {encut}\n"
+                        current_file.write(new_line)
+                    else:
+                        current_file.write(line)
 
         os.chdir(os.path.join(calc_dir, str(encut)))
         subprocess.run(["sbatch", "jobscript.sh"])
