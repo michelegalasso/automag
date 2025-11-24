@@ -53,9 +53,9 @@ if mode == "encut":
         with open(os.path.join(calc_dir, "raw_input", input_file_name), "r") as template_file:
             with open(os.path.join(calc_dir, str(encut), input_file_name), "w") as current_file:
                 for line in template_file:
-                    if "!encutwfc" in line:
+                    if "!ecutwfc" in line:
                         leading_spaces = line.split("!")[0]
-                        new_line = leading_spaces + f"encutwfc = {encut}\n"
+                        new_line = leading_spaces + f"ecutwfc = {encut}\n"
                         current_file.write(new_line)
                     else:
                         current_file.write(line)
