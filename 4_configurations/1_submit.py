@@ -1,7 +1,6 @@
 import os
 import shutil
 import subprocess
-import time
 import warnings
 
 import numpy as np
@@ -19,14 +18,11 @@ supercell_size = 1
 
 # the absolute values given to up and down magnetic moments
 abs_magmom_values = {
-    'Sm': [5],
+    'Tb': [0.6],
 }
 
-# choose collinear or non-collinear calculations
-collinear = False
-
-# root dir: it must contain a raw_input folder with INCAR (without ENCUT), POSCAR, POTCAR, KPOINTS and jobscript.sh
-calc_dir = "/home/michele/EXCHANGE/Sm4H23/4_configurations"
+# root dir: it must contain a raw_input folder with pw.scf.in and jobscript.sh
+calc_dir = "/home/michele/EXCHANGE/collinear/Tb4H23/4_configurations"
 
 ### END OF INPUT PART ###
 
@@ -355,25 +351,14 @@ for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, con
             f.write("\n\n")
             f.write("# Added by Automag\n")
             for j, magmom in enumerate(conf):
-                if collinear:
-                    if j == 0:
-                        f.write(f"MAGMOM = {magmom:4.1f}")
-                    else:
-                        f.write(f"  {magmom:4.1f}")
-
-                    # add a new line every 8 atoms
-                    if (j + 1) % 8 == 0:
-                        f.write("  \\\n       ")
-
+                if j == 0:
+                    f.write(f"MAGMOM = {magmom:4.1f}")
                 else:
-                    if j == 0:
-                        f.write(f"MAGMOM = 0.0  0.0 {magmom:4.1f}")
-                    else:
-                        f.write(f"    0.0  0.0 {magmom:4.1f}")
+                    f.write(f"  {magmom:4.1f}")
 
-                    # add a new line every 8 atoms
-                    if (j + 1) % 8 == 0:
-                        f.write("  \\\n     ")
+                # add a new line every 8 atoms
+                if (j + 1) % 8 == 0:
+                    f.write("  \\\n       ")
 
             # add a new line if needed
             if j % 8 != 0:
@@ -393,5 +378,5 @@ for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, con
         with open(os.path.join(calc_dir, state, "jobscript.sh"), "w") as f:
             f.write(jobscript_content)
 
-        subprocess.run(["sbatch", "jobscript.sh"], cwd=os.path.join(calc_dir, state))
-        time.sleep(1)
+        # subprocess.run(["sbatch", "jobscript.sh"], cwd=os.path.join(calc_dir, state))
+        # time.sleep(1)
