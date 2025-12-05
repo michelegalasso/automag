@@ -1,5 +1,4 @@
 import os
-import shutil
 import subprocess
 import warnings
 
@@ -29,6 +28,9 @@ calc_dir = "/home/michele/EXCHANGE/collinear/Tb4H23/4_configurations"
 
 # ignore warnings
 warnings.filterwarnings("ignore")
+
+if len(abs_magmom_values) > 1:
+    raise ValueError("Multiple magnetic atomic types are not supported yet in this version of Automag.")
 
 # consistency check
 files_to_copy = ["pw.scf.in", "jobscript.sh"]
@@ -194,11 +196,12 @@ if os.path.exists("trials"):
 os.mkdir("trials")
 os.chdir("trials")
 
-# create Structure and SymmetrizedStructure objects
-atoms = read(path_to_input_file)
+# create a file in POSCAR format readable by pymatgen
+atoms = read(path_to_input_file, format="espresso-in")
 write(filename="tmp.vasp", images=atoms, format="vasp")
 
-structure = Structure.from_file(path_to_input_file)
+# create Structure and SymmetrizedStructure objects
+structure = Structure.from_file("tmp.vasp")
 analyzer = SpacegroupAnalyzer(structure, symprec=0.2)
 symmetrized_structure = analyzer.get_symmetrized_structure()
 
@@ -341,46 +344,25 @@ for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, con
                 fim_count += 1
 
             f.write(f"{state:>6s}  ")
-            f.write(" ".join(f"{e:2d}" for e in conf_array[mask]))
+            f.write(" ".join(f"{e:4.1f}" for e in conf_array[mask]))
             f.write("\n")
 
-        # prepare calculation
-        os.mkdir(os.path.join(calc_dir, state))
-        for filename in files_to_copy:
-            if filename != "jobscript.sh":
-                shutil.copy(os.path.join(calc_dir, "raw_input", filename), os.path.join(calc_dir, state))
-
-        # add MAGMOM to INCAR
-        with open(os.path.join(calc_dir, state, "INCAR"), "a") as f:
-            f.write("\n\n")
-            f.write("# Added by Automag\n")
-            for j, magmom in enumerate(conf):
-                if j == 0:
-                    f.write(f"MAGMOM = {magmom:4.1f}")
-                else:
-                    f.write(f"  {magmom:4.1f}")
-
-                # add a new line every 8 atoms
-                if (j + 1) % 8 == 0:
-                    f.write("  \\\n       ")
-
-            # add a new line if needed
-            if j % 8 != 0:
-                f.write("\n")
+        # TODO: write magnetic states to pw.scf.in
+        # os.mkdir(os.path.join(calc_dir, state))
 
         # add calculation name to jobscript.sh
-        jobscript_content = ""
-        with open(os.path.join(calc_dir, "raw_input", "jobscript.sh"), "r") as f:
-            for line in f:
-                if "#SBATCH -J" in line:
-                    base_name = line.split()[-1]
-                    new_line = f"#SBATCH -J {base_name}_{state}\n"
-                    jobscript_content += new_line
-                else:
-                    jobscript_content += line
-
-        with open(os.path.join(calc_dir, state, "jobscript.sh"), "w") as f:
-            f.write(jobscript_content)
+        # jobscript_content = ""
+        # with open(os.path.join(calc_dir, "raw_input", "jobscript.sh"), "r") as f:
+        #     for line in f:
+        #         if "#SBATCH -J" in line:
+        #             base_name = line.split()[-1]
+        #             new_line = f"#SBATCH -J {base_name}_{state}\n"
+        #             jobscript_content += new_line
+        #         else:
+        #             jobscript_content += line
+        #
+        # with open(os.path.join(calc_dir, state, "jobscript.sh"), "w") as f:
+        #     f.write(jobscript_content)
 
         # subprocess.run(["sbatch", "jobscript.sh"], cwd=os.path.join(calc_dir, state))
         # time.sleep(1)
