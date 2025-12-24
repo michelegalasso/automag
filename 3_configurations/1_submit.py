@@ -22,7 +22,7 @@ abs_magmom_values = {
 }
 
 # root dir: it must contain a raw_input folder with pw.scf.in and jobscript.sh
-calc_dir = "/home/michele/EXCHANGE/collinear/Tb4H23/4_configurations"
+calc_dir = "/home/michele/EXCHANGE/collinear/Tb4H23/3_configurations"
 
 ### END OF INPUT PART ###
 

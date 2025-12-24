@@ -7,6 +7,13 @@ import numpy as np
 from numpy.polynomial import Polynomial
 
 
+### START OF INPUT PART ###
+
+# root dir for the convergence test
+calc_dir = "/home/michele/EXCHANGE/Sm4H23/2_hubbard_u"
+
+### END OF INPUT PART ###
+
 # matplotlib backend and font size
 matplotlib.use("TkAgg")
 plt.rcParams.update({"font.size": 14})
@@ -31,13 +38,6 @@ def read_charge_from_outcar(filename):
     # return energy value
     return result
 
-
-### START OF INPUT PART ###
-
-# root dir for the convergence test
-calc_dir = "/home/michele/EXCHANGE/Sm4H23/2_hubbard_u"
-
-### END OF INPUT PART ###
 
 # initialization
 perturbations = []

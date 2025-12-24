@@ -1,139 +1,138 @@
 import os
+
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 from ase.io import read
-from pymatgen.io.vasp.inputs import Incar
+from prettytable import PrettyTable
 
 
 ### START OF INPUT PART ###
 
-# root dir for the convergence test
-calc_dir = "/home/michele/EXCHANGE/Tb4H23/4_configurations"
-
-# number of heavy atoms in the unit cell (ignored if plotting magmom)
-n_heavy_atoms = 8
+# root dir
+calc_dir = "/home/michele/EXCHANGE/Tb4H23/3_configurations"
 
 ### END OF INPUT PART ###
 
-
-def is_comment(line):
-    stripped_line = line.strip()
-    if stripped_line.startswith("!") or stripped_line.startswith("#"):
-        return True
-
-    return False
-
-
-def rewrite_incar(path_to_incar):
-    # initialization
-    new_line = ""
-
-    with open(path_to_incar, "r") as original_file:
-        with open(path_to_incar + "2", "w") as new_file:
-            for original_line in original_file:
-                parts = original_line.split()
-                if len(parts) > 0 and parts[-1].endswith("\\") and not is_comment(original_line):
-                    new_line += original_line.split("\\")[0]
-                    write_flag = False
-                else:
-                    new_line += original_line
-                    write_flag = True
-
-                if write_flag:
-                    new_file.write(new_line)
-                    new_line = ""
-
+# matplotlib font size
+plt.rcParams.update({"font.size": 14})
 
 def better_sort(state):
-    if state == 'nm':
-        return 'aa'
-    elif state.startswith('fm'):
-        return 'aaa' + state[2:]
+    if state == "nm":
+        return "aa"
+    elif state.startswith("fm"):
+        return "aaa" + state[2:]
     else:
         return state
 
 
+def get_initial_magnetic_moments(path, n_atoms):
+    # initialization
+    prev_site = 0
+    values = []
+
+    with open(path, "r") as f:
+        for line in f:
+            if "magnetic moment" in line:
+                fields = line.split()
+                site = int(fields[5])
+
+                if prev_site > site:
+                    break
+                else:
+                    values.append(float(fields[7]))
+                    prev_site = site
+
+    remaining_sites = n_atoms - prev_site
+    values += remaining_sites * [0.0]
+    return np.array(values)
+
 # initialization
 mag_states = []
+visual_states = []
 energies = []
 colors = []
 
 for folder in sorted(os.listdir(calc_dir), key=better_sort):
-    if folder != "raw_input" and folder != "full_relax":
-        # get around Pymatgen bug by rewriting the INCAR as INCAR2
-        rewrite_incar(os.path.join(calc_dir, folder, 'INCAR'))
-
-        # read INCAR2 and OUTCAR
-        incar = Incar.from_file(os.path.join(calc_dir, folder, 'INCAR2'))
-        atoms = read(os.path.join(calc_dir, folder, 'OUTCAR'))
+    if os.path.isdir(os.path.join(calc_dir, folder)):
+        # read QE output
+        atoms = read(os.path.join(calc_dir, folder, "pw.scf.out"))
         energy = atoms.get_total_energy()
 
         # evaluate whether magnetic moments significantly changed
-        initial_magmom = np.array(incar.get("MAGMOM"))
-        final_magmom = atoms.get_magnetic_moments()
+        initial_magmoms = get_initial_magnetic_moments(
+            os.path.join(calc_dir, folder, "pw.scf.out"),
+            len(atoms),
+        )
+        final_magmoms = atoms.get_magnetic_moments()
 
-        # the collinear case has not been implemented yet
-        if initial_magmom.shape[1] != 3 or final_magmom.shape[1] != 3:
-            raise NotImplementedError("The collinear case has not been implemented yet.")
+        # build visual state
+        visual_state = ''
+        for magmom in initial_magmoms[:8]:
+            if magmom > 0:
+                visual_state += '+ '
+            elif magmom < 0:
+                visual_state += '- '
+            else:
+                visual_state += '0 '
 
-        # compute the norms
-        initial_magmom_norms = np.linalg.norm(initial_magmom, axis=1)
-        final_magmom_norms = np.linalg.norm(final_magmom, axis=1)
-
-        print("\n")
-        for j, item in enumerate(final_magmom):
-            if j < 8:
-                print(f"{item[0]} {item[1]} {item[2]}")
-
-        # blue means no big variation, red means big variation, orange means angle variation
+        # blue means no big variation, red means big variation
         color = "tab:blue"
         indices = []
 
-        for i, (initial_norm, final_norm) in enumerate(zip(initial_magmom_norms, final_magmom_norms)):
-            # if something initialized as zero goes crazy high we signal a big variation
-            if np.isclose(initial_norm, 0.0) and final_norm > 0.5:
+        for initial_magmom, final_magmom in zip(initial_magmoms, final_magmoms):
+            # catch the big variations
+            if np.abs(initial_magmom - final_magmom) > 0.9:
                 color = "tab:red"
 
-            if initial_norm > 0.5:
-                # if something initialized high goes below 0.5 we signal a big variation
-                if final_norm < 0.5:
-                    color = "tab:red"
-
-                # otherwise we write down the index for later analyzing the angle
-                else:
-                    indices.append(i)
-
-        # do this only if not flagged as big variation
-        if color != "tab:red":
-            # go to numpy array
-            indices = np.array(indices)
-
-            # get the angle between initial and final magmom vectors in degrees
-            dot_products = np.sum(initial_magmom[indices] * final_magmom[indices], axis=1)
-            norms = initial_magmom_norms[indices] * final_magmom_norms[indices]
-            cos_thetas = np.clip(dot_products / norms, -1.0, 1.0)
-            angles_deg = np.degrees(np.arccos(cos_thetas))
-
-            if angles_deg.max() > 5.0:
-                color = "tab:orange"
-
         mag_states.append(folder)
-        energies.append(energy)
+        visual_states.append(visual_state[:-1])
+        energies.append(energy / len(atoms) * 1000)
         colors.append(color)
 
 # numpy arrays
 mag_states = np.array(mag_states)
-energies = np.array(energies) / n_heavy_atoms
+energies = np.array(energies)
 
 # energy differences
 energies = energies - energies.min()
 
+# print table
+table = PrettyTable()
+table.field_names = ["Name", "Magnetic configuration", "Energy [meV/atom]", "Kept magmoms"]
+for mag_state, visual_state, energy, color in zip(mag_states, visual_states, energies, colors):
+    if color == "tab:blue":
+        kept = "Yes"
+    else:
+        kept = "No"
+
+    table.add_row([mag_state, visual_state, f"{energy:.2f}", kept])
+
+print(table)
+
 # plot
 plt.figure(figsize=(16, 9))
-plt.bar(mag_states, energies + 1, bottom=-1, color=colors)
+bars = plt.bar(mag_states, energies + 50, bottom=-50, color=colors)
+plt.bar_label(
+    bars,
+    labels=[f"{e:.0f}" for e in energies],
+    padding=3,
+    fontsize=12,
+)
 
 plt.xticks(rotation=90)
 # plt.ylim(-0.01, 0.03)
-plt.ylabel('Energy [eV/atom]')
+plt.ylabel("Energy [meV/atom]")
+# plt.grid()
+
+# legend
+plt.legend(
+    handles=[
+        mpatches.Patch(color="tab:blue", label="unchanged"),
+        mpatches.Patch(color="tab:red", label="changed"),
+    ]
+)
+
 plt.show()
+# plt.savefig("configurations.png")
