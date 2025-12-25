@@ -1,10 +1,11 @@
 import os
 
+import numpy
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-from ase.io import read
+from ase.io import read, write
 from prettytable import PrettyTable
 
 
@@ -97,6 +98,34 @@ energies = np.array(energies)
 
 # energy differences
 energies = energies - energies.min()
+
+# save settings file
+atoms = read(os.path.join(calc_dir, "nm", "pw.scf.out"))
+write("settings.vasp", images=atoms, format="vasp")
+
+# save states file
+numerical_states = []
+energies_for_file = []
+for i, (visual_state, energy, color) in enumerate(zip(visual_states, energies, colors)):
+    # skip nm (the first state) and those that changed after scf
+    if i > 0 and color == "tab:blue":
+        items = visual_state.split()
+
+        numerical_state = []
+        for item in items:
+            if item == "+":
+                numerical_state.append(1)
+            elif item == "-":
+                numerical_state.append(-1)
+            else:
+                numerical_state.append(0)
+
+        numerical_states.append(numerical_state)
+        energies_for_file.append(energy)
+
+numerical_states = np.array(numerical_states)
+numpy.savetxt("states.txt", numerical_states, fmt="%3d")
+numpy.savetxt("energies.txt", energies_for_file, fmt="%.8f")
 
 # print table
 table = PrettyTable()
