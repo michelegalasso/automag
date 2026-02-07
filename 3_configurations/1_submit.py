@@ -18,11 +18,11 @@ supercell_size = 1
 
 # the absolute values given to up and down magnetic moments
 abs_magmom_values = {
-    "Tb": [0.6],
+    "Fe": [0.6],
 }
 
-# root dir: it must contain a raw_input folder with pw.scf.in and jobscript.sh
-calc_dir = "/home/michele/EXCHANGE/collinear/Tb4H23/3_configurations"
+# root dir: it must contain a file input_geometry.vasp and a folder "nm" containing pw.scf.in and jobscript.sh
+calc_dir = "/home/michele/EXCHANGE/Fe2O3/3_configurations/workdir"
 
 ### END OF INPUT PART ###
 
@@ -36,12 +36,12 @@ if len(abs_magmom_values) > 1:
 files_to_copy = ["pw.scf.in", "jobscript.sh"]
 
 assert os.path.exists(calc_dir)
-assert os.path.exists(os.path.join(calc_dir, "raw_input"))
+assert os.path.exists(os.path.join(calc_dir, "nm"))
 for filename in files_to_copy:
-    assert os.path.exists(os.path.join(calc_dir, "raw_input", filename))
+    assert os.path.exists(os.path.join(calc_dir, "nm", filename))
 
 # full path to pw.scf.in
-path_to_input_file = os.path.join(calc_dir, "raw_input", "pw.scf.in")
+path_to_input_file = os.path.join(calc_dir, "nm", "pw.scf.in")
 
 def launch_enumlib(count, split):
     os.mkdir(f"enumlib{count}")
@@ -196,12 +196,8 @@ if os.path.exists("trials"):
 os.mkdir("trials")
 os.chdir("trials")
 
-# create a file in POSCAR format readable by pymatgen
-atoms = read(path_to_input_file, format="espresso-in")
-write(filename="tmp.vasp", images=atoms, format="vasp")
-
 # create Structure and SymmetrizedStructure objects
-structure = Structure.from_file("tmp.vasp")
+structure = Structure.from_file(os.path.join(calc_dir, "input_geometry.vasp"))
 analyzer = SpacegroupAnalyzer(structure, symprec=0.2)
 symmetrized_structure = analyzer.get_symmetrized_structure()
 
@@ -352,7 +348,7 @@ for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, con
 
         # add calculation name to jobscript.sh
         # jobscript_content = ""
-        # with open(os.path.join(calc_dir, "raw_input", "jobscript.sh"), "r") as f:
+        # with open(os.path.join(calc_dir, "nm", "jobscript.sh"), "r") as f:
         #     for line in f:
         #         if "#SBATCH -J" in line:
         #             base_name = line.split()[-1]
