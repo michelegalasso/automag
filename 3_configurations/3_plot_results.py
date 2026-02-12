@@ -12,7 +12,9 @@ from prettytable import PrettyTable
 ### START OF INPUT PART ###
 
 # root dir
-calc_dir = "/home/michele/EXCHANGE/Tb4H23/3_configurations"
+calc_dir = "/home/michele/EXCHANGE/Fe2O3/3_configurations/results"
+
+magnetic_atoms = ["Fe"]
 
 ### END OF INPUT PART ###
 
@@ -68,9 +70,14 @@ for folder in sorted(os.listdir(calc_dir), key=better_sort):
         )
         final_magmoms = atoms.get_magnetic_moments()
 
+        # select the magnetic atoms
+        magnetic_mask = np.zeros_like(initial_magmoms, dtype=bool)
+        for element in magnetic_atoms:
+            magnetic_mask = np.logical_or(magnetic_mask, atoms.symbols == element)
+
         # build visual state
         visual_state = ''
-        for magmom in initial_magmoms[:8]:
+        for magmom in initial_magmoms[magnetic_mask]:
             if magmom > 0:
                 visual_state += '+ '
             elif magmom < 0:
@@ -100,7 +107,7 @@ energies = np.array(energies)
 energies = energies - energies.min()
 
 # save settings file
-atoms = read(os.path.join(calc_dir, "nm", "pw.scf.out"))
+atoms = read(os.path.join(calc_dir, "fm1", "pw.scf.out"))
 write("settings.vasp", images=atoms, format="vasp")
 
 # save states file

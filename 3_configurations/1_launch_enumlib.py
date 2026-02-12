@@ -1,11 +1,10 @@
 import os
 import subprocess
 import warnings
+from itertools import product
 
 import numpy as np
 
-from ase.io import read, write
-from itertools import product
 from pymatgen.io.vasp import Poscar
 from pymatgen.core.structure import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
@@ -21,7 +20,7 @@ abs_magmom_values = {
     "Fe": [0.6],
 }
 
-# root dir: it must contain a file input_geometry.vasp and a folder "nm" containing pw.scf.in and jobscript.sh
+# root dir: it must contain a file input_geometry.vasp
 calc_dir = "/home/michele/EXCHANGE/Fe2O3/3_configurations/workdir"
 
 ### END OF INPUT PART ###
@@ -33,15 +32,8 @@ if len(abs_magmom_values) > 1:
     raise ValueError("Multiple magnetic atomic types are not supported yet in this version of Automag.")
 
 # consistency check
-files_to_copy = ["pw.scf.in", "jobscript.sh"]
-
 assert os.path.exists(calc_dir)
-assert os.path.exists(os.path.join(calc_dir, "nm"))
-for filename in files_to_copy:
-    assert os.path.exists(os.path.join(calc_dir, "nm", filename))
 
-# full path to pw.scf.in
-path_to_input_file = os.path.join(calc_dir, "nm", "pw.scf.in")
 
 def launch_enumlib(count, split):
     os.mkdir(f"enumlib{count}")
@@ -342,23 +334,3 @@ for i, (lattice, frac_coords, confs) in enumerate(zip(lattices, coordinates, con
             f.write(f"{state:>6s}  ")
             f.write(" ".join(f"{e:4.1f}" for e in conf_array[mask]))
             f.write("\n")
-
-        # TODO: write magnetic states to pw.scf.in
-        # os.mkdir(os.path.join(calc_dir, state))
-
-        # add calculation name to jobscript.sh
-        # jobscript_content = ""
-        # with open(os.path.join(calc_dir, "nm", "jobscript.sh"), "r") as f:
-        #     for line in f:
-        #         if "#SBATCH -J" in line:
-        #             base_name = line.split()[-1]
-        #             new_line = f"#SBATCH -J {base_name}_{state}\n"
-        #             jobscript_content += new_line
-        #         else:
-        #             jobscript_content += line
-        #
-        # with open(os.path.join(calc_dir, state, "jobscript.sh"), "w") as f:
-        #     f.write(jobscript_content)
-
-        # subprocess.run(["sbatch", "jobscript.sh"], cwd=os.path.join(calc_dir, state))
-        # time.sleep(1)
