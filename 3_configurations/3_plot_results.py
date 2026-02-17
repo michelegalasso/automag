@@ -12,9 +12,10 @@ from prettytable import PrettyTable
 ### START OF INPUT PART ###
 
 # root dir
-calc_dir = "/home/michele/EXCHANGE/Fe2O3/3_configurations/results"
+calc_dir = "/home/michele/EXCHANGE/Tb4H23/3_configurations/settings002/results"
 
-magnetic_atoms = ["Fe"]
+# magnetic atoms
+magnetic_atoms = ["Tb"]
 
 ### END OF INPUT PART ###
 

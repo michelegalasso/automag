@@ -1,21 +1,40 @@
-"""
-automag.3_monte_carlo.1_coupling_constants.py
-=============================================
-
-Script which computes the coupling constants between magnetic atoms.
-
-.. codeauthor:: Michele Galasso <m.galasso@yandex.com>
-"""
-
-from input import *
-
 import os
-import json
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
 from pymatgen.core.structure import Structure
+
+### START OF INPUT PART ###
+
+# choose the number of nearest neighbors to take into account
+cutoff_radius = 3.0
+
+# choose the size of the control group
+control_group_size = 0.4
+
+# append coupling constant before launching 2_write_vampire_ucf.py
+append_coupling_constants = False
+
+# choose the atomic types to be considered magnetic (default transition metals)
+magnetic_atoms = ['Tb']
+
+### END OF INPUT PART ###
+
+
+def system(configurations):
+    matrix = []
+    for conf in configurations:
+        equation = [1]
+        for distance in unique_distances:
+            count = 0
+            for atom1, atom2, d in zip(center_indices, point_indices, distances):
+                if np.isclose(d, distance, atol=0.02):
+                    count += conf[atom1] * conf[atom2]
+            equation.append(-count // 2)
+        matrix.append(equation)
+    return np.array(matrix)
+
 
 # initialize variables
 structure = None
@@ -23,24 +42,22 @@ states = None
 energies = None
 
 # read input files from previous step
-for item in os.listdir('../2_coll'):
-    rel_path = os.path.join('../2_coll', item)
+for item in os.listdir('../3_configurations'):
+    rel_path = os.path.join('../3_configurations', item)
     if os.path.isfile(rel_path):
-        if item.startswith('setting') and item.endswith('.vasp'):
+        if item.startswith('settings') and item.endswith('.vasp'):
             structure = Structure.from_file(rel_path)
         if item.startswith('states') and item.endswith('.txt'):
-            with open(rel_path, 'rt') as f:
-                states = json.load(f)
+            states = np.loadtxt(rel_path, dtype=int)
         if item.startswith('energies') and item.endswith('.txt'):
-            with open(rel_path, 'rt') as f:
-                energies = json.load(f)
+            energies = np.loadtxt(rel_path)
 
 if structure is None:
-    raise IOError('No setting file found in ../2_coll folder.')
+    raise IOError('No settings file found in ../3_configurations folder.')
 if states is None:
-    raise IOError('No states file found in ../2_coll folder.')
+    raise IOError('No states file found in ../3_configurations folder.')
 if energies is None:
-    raise IOError('No energies file found in ../2_coll folder.')
+    raise IOError('No energies file found in ../3_configurations folder.')
 
 # find out which atoms are magnetic
 for element in structure.composition.elements:
@@ -52,26 +69,14 @@ for element in structure.composition.elements:
         else:
             element.is_magnetic = False
 
-# from eV/atom to total energy of the unit cell
-energies = structure.num_sites * np.array(energies)
+# from meV/atom to total energy of the unit cell in eV/atom
+energies = energies * structure.num_sites / 1000
 
-
-def system(configurations):
-    matrix = []
-    for item in configurations:
-        equation = [1]
-        for distance in unique_distances:
-            count = 0
-            for atom1, atom2, d in zip(center_indices, point_indices, distances):
-                if np.isclose(d, distance, atol=0.02):
-                    count += item[atom1] * item[atom2]
-            equation.append(-count // 2)
-        matrix.append(equation)
-    return np.array(matrix)
-
-
+# remove non-magnetic atoms
 non_magnetic_atoms = [element.symbol for element in structure.composition.elements if not element.is_magnetic]
 structure.remove_species(non_magnetic_atoms)
+
+# get neighbor list
 center_indices, point_indices, offset_vectors, distances = structure.get_neighbor_list(cutoff_radius)
 
 # get unique distances
@@ -132,8 +137,8 @@ if np.linalg.matrix_rank(A) == len(unique_distances) + 1:
     ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
     ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f'))
     plt.legend()
-    # plt.show()
-    plt.savefig('model.png', bbox_inches='tight')
+    plt.show()
+    # plt.savefig('model.png', bbox_inches='tight')
     print(f'PCC: {PCC[0, 1]:.2f}')
 else:
     print(f'ERROR: SYSTEM OF {np.linalg.matrix_rank(A)} INDEPENDENT EQUATION(S) '
